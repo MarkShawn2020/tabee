@@ -43,20 +43,9 @@ export default function Home() {
         )
       
       case 'select':
-        if (!excelData) return null
         return (
           <div className="max-w-4xl mx-auto">
-            <WorksheetSelector
-              workbook={{
-                sheets: [{
-                  name: excelData.sheetName,
-                  tables: [{
-                    range: 'A1:' + String.fromCharCode(65 + excelData.headers.length - 1) + excelData.rows.length,
-                    preview: excelData
-                  }]
-                }]
-              }}
-            />
+            <WorksheetSelector />
           </div>
         )
       

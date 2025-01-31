@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { ExcelData } from './excel';
+import { ExcelData, ParsedExcel } from './excel';
 
 export interface IStructureAnalysis {
   isStructured: boolean;
@@ -8,8 +8,20 @@ export interface IStructureAnalysis {
   reason: string;
 }
 
+// 原始的 Excel 数据
+export const rawExcelAtom = atom<ParsedExcel | null>(null)
+
+// 处理后的表格数据
 export const excelDataAtom = atom<ExcelData | null>(null);
-export const viewModeAtom = atom<'table' | 'series'>('table');
+
+// 加载状态
 export const loadingAtom = atom<boolean>(false);
+
+// 错误信息
 export const errorAtom = atom<string | null>(null);
+
+// 视图模式
+export type ViewMode = 'table' | 'series';
+export const viewModeAtom = atom<ViewMode>('table');
+
 export const structureAnalysisAtom = atom<IStructureAnalysis | null>(null);

@@ -6,47 +6,46 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { stepAtom, tableInfoAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom } from "@/lib/store/steps"
-import { useAtom } from "jotai"
-import { ExcelData } from "@/lib/excel"
+import { stepAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom } from "@/lib/store/steps"
+import { rawExcelAtom, excelDataAtom } from "@/lib/store"
+import { useAtom, useAtomValue } from "jotai"
+import { processSheetData } from "@/lib/excel"
 
-interface Props {
-  workbook: {
-    sheets: {
-      name: string
-      tables: Array<{
-        range: string
-        preview: ExcelData
-      }>
-    }[]
-  }
-}
-
-export function WorksheetSelector({ workbook }: Props) {
+export function WorksheetSelector() {
   const [, setStep] = useAtom(stepAtom)
-  const [, setTableInfo] = useAtom(tableInfoAtom)
   const [selectedSheet, setSelectedSheet] = useAtom(selectedSheetAtom)
   const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom)
   const [headerRows, setHeaderRows] = useAtom(headerRowsAtom)
+  const rawExcel = useAtomValue(rawExcelAtom)
+  const [, setExcelData] = useAtom(excelDataAtom)
+
+  if (!rawExcel) return null
 
   // 初始化选中值
-  if (!selectedSheet && workbook.sheets.length > 0) {
-    setSelectedSheet(workbook.sheets[0].name)
-  }
-  if (!selectedTable && workbook.sheets[0]?.tables.length > 0) {
-    setSelectedTable(workbook.sheets[0].tables[0].range)
+  if (!selectedSheet && rawExcel.sheets.length > 0) {
+    setSelectedSheet(rawExcel.sheets[0].name)
   }
 
-  const currentSheet = workbook.sheets.find(s => s.name === selectedSheet)
-  const currentTable = currentSheet?.tables.find(t => t.range === selectedTable)
+  const currentSheet = rawExcel.sheets.find(s => s.name === selectedSheet)
+  const currentData = currentSheet?.data || []
+
+  // 生成数据范围
+  const tableRange = currentData.length > 0
+    ? `A1:${String.fromCharCode(65 + currentData[0].length - 1)}${currentData.length}`
+    : ''
+
+  if (!selectedTable && tableRange) {
+    setSelectedTable(tableRange)
+  }
 
   const handleConfirm = () => {
-    if (currentSheet && currentTable) {
-      setTableInfo({
-        sheetName: selectedSheet,
-        tableRange: selectedTable,
+    if (currentSheet) {
+      const processedData = processSheetData(
+        currentSheet.data,
+        currentSheet.name,
         headerRows
-      })
+      )
+      setExcelData(processedData)
       setStep('view')
     }
   }
@@ -62,7 +61,7 @@ export function WorksheetSelector({ workbook }: Props) {
                 <SelectValue placeholder="选择工作表" />
               </SelectTrigger>
               <SelectContent>
-                {workbook.sheets.map(sheet => (
+                {rawExcel.sheets.map(sheet => (
                   <SelectItem key={sheet.name} value={sheet.name}>
                     {sheet.name}
                   </SelectItem>
@@ -71,43 +70,29 @@ export function WorksheetSelector({ workbook }: Props) {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>数据范围</Label>
-            <Select value={selectedTable} onValueChange={setSelectedTable}>
-              <SelectTrigger>
-                <SelectValue placeholder="选择数据范围" />
-              </SelectTrigger>
-              <SelectContent>
-                {currentSheet?.tables.map(table => (
-                  <SelectItem key={table.range} value={table.range}>
-                    {table.range}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>表头行数</Label>
-            <Input
-              type="number"
-              value={headerRows}
-              onChange={e => setHeaderRows(Number(e.target.value))}
-              min={1}
-              max={currentTable ? Math.max(1, currentTable.preview.rows.length - 1) : 1}
-            />
-          </div>
+          {currentData.length > 0 && (
+            <div className="space-y-2">
+              <Label>表头行数</Label>
+              <Input
+                type="number"
+                value={headerRows}
+                onChange={e => setHeaderRows(Number(e.target.value))}
+                min={1}
+                max={Math.max(1, currentData.length - 1)}
+              />
+            </div>
+          )}
         </div>
       </Card>
 
-      {currentTable && (
+      {currentData.length > 0 && (
         <Card className="p-4 space-y-4">
           <Label>预览</Label>
           <ScrollArea className="h-[300px] w-full rounded-md border">
             <div className="p-4">
               <table className="w-full">
                 <tbody>
-                  {currentTable.preview.rows.slice(0, 5).map((row, rowIndex) => (
+                  {currentData.slice(0, 5).map((row, rowIndex) => (
                     <tr 
                       key={rowIndex}
                       className={`border-b ${rowIndex < headerRows ? 'bg-muted/50' : ''}`}
@@ -127,7 +112,7 @@ export function WorksheetSelector({ workbook }: Props) {
       )}
 
       <div className="flex justify-end">
-        <Button onClick={handleConfirm} disabled={!currentTable}>
+        <Button onClick={handleConfirm} disabled={!currentData.length}>
           确认并继续
         </Button>
       </div>
