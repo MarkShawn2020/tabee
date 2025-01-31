@@ -1,15 +1,17 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useSetAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { ExcelError, parseExcelFile } from '@/lib/excel';
 import { excelDataAtom, errorAtom, loadingAtom, structureAnalysisAtom } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import { stepAtom } from '@/lib/store/steps';
 
 export function UploadZone() {
   const setExcelData = useSetAtom(excelDataAtom);
   const setLoading = useSetAtom(loadingAtom);
   const setError = useSetAtom(errorAtom);
   const setStructureAnalysis = useSetAtom(structureAnalysisAtom);
+  const [step, setStep] = useAtom(stepAtom);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -53,6 +55,7 @@ export function UploadZone() {
 
       const analysis = await response.json();
       setStructureAnalysis(analysis);
+      setStep("select")
       
     } catch (err) {
       console.error('❌ Error processing file:', err);

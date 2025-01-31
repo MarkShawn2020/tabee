@@ -3,40 +3,80 @@
 import { TablePreview } from "@/components/table-preview"
 import { TableView } from "@/components/table-view"
 import { UploadZone } from '@/components/upload-zone'
+import { WorksheetSelector } from "@/components/worksheet-selector"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { excelDataAtom, errorAtom, loadingAtom, viewModeAtom } from '@/lib/store'
+import { stepAtom } from "@/lib/store/steps"
 import { useAtom, useAtomValue } from 'jotai'
-import { useState } from "react"
 
 export default function Home() {
   const [excelData, setExcelData] = useAtom(excelDataAtom)
+  const [step, setStep] = useAtom(stepAtom)
   const loading = useAtomValue(loadingAtom)
   const error = useAtomValue(errorAtom)
   const [viewMode, setViewMode] = useAtom(viewModeAtom)
-  const [headerRows, setHeaderRows] = useState(1)
 
-  const handleHeaderRowsChange = (newHeaderRows: number) => {
-    setHeaderRows(newHeaderRows)
-    if (excelData) {
-      setExcelData({
-        ...excelData,
-        metadata: {
-          ...excelData.metadata,
-          headerRows: newHeaderRows
-        }
-      })
+  // 渲染当前步骤
+  const renderStep = () => {
+    switch (step) {
+      case 'upload':
+        return (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <UploadZone/>
+          </div>
+        )
+      
+      case 'select':
+        if (!excelData) return null
+        return (
+          <div className="max-w-4xl mx-auto">
+            <WorksheetSelector
+              workbook={{
+                sheets: [{
+                  name: excelData.sheetName,
+                  tables: [{
+                    range: 'A1:' + String.fromCharCode(65 + excelData.headers.length - 1) + excelData.rows.length,
+                    preview: excelData
+                  }]
+                }]
+              }}
+            />
+          </div>
+        )
+      
+      case 'view':
+        if (!excelData) return null
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-end gap-4">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="view-mode">移动视图</Label>
+                <Switch
+                  id="view-mode"
+                  checked={viewMode === "series"}
+                  onCheckedChange={(checked) => setViewMode(checked ? "series" : "table")}
+                />
+              </div>
+            </div>
+            {viewMode === 'table' ? <TablePreview /> : <TableView />}
+          </div>
+        )
     }
   }
 
   return (
     <main className="container mx-auto p-4 space-y-8">
-      {!excelData && (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <UploadZone />
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl font-bold">TaBee</h1>
+        <div className="flex items-center justify-center gap-2">
+          <Step active={step === 'upload'}>上传表格</Step>
+          <Divider />
+          <Step active={step === 'select'}>选择工作表</Step>
+          <Divider />
+          <Step active={step === 'view'}>查看数据</Step>
         </div>
-      )}
+      </div>
 
       {loading && (
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -53,36 +93,23 @@ export default function Home() {
         </div>
       )}
 
-      {excelData && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">{excelData.sheetName}</h2>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="header-rows">表头行数</Label>
-                <Input
-                  id="header-rows"
-                  type="number"
-                  value={headerRows}
-                  onChange={(e) => handleHeaderRowsChange(Number(e.target.value))}
-                  min={1}
-                  max={Math.max(1, excelData.rows.length - 1)}
-                  className="w-20"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="view-mode">移动视图</Label>
-                <Switch
-                  id="view-mode"
-                  checked={viewMode === "series"}
-                  onCheckedChange={(checked) => setViewMode(checked ? "series" : "table")}
-                />
-              </div>
-            </div>
-          </div>
-          {viewMode === 'table' ? <TablePreview /> : <TableView />}
-        </div>
-      )}
+      {!loading && !error && renderStep()}
     </main>
   )
+}
+
+// 步骤指示器组件
+function Step({ children, active }: { children: React.ReactNode; active: boolean }) {
+  return (
+    <div className={`px-4 py-2 rounded-full text-sm ${
+      active ? 'bg-primary text-primary-foreground' : 'bg-muted'
+    }`}>
+      {children}
+    </div>
+  )
+}
+
+// 步骤分隔符
+function Divider() {
+  return <div className="h-px w-8 bg-border" />
 }
