@@ -1,51 +1,45 @@
 'use client'
 
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Card } from "@/components/ui/card"
 import { excelDataAtom } from "@/lib/store"
-import { headerRowsAtom } from "@/lib/store/steps"
 import { useAtomValue } from "jotai"
 
 export function TablePreview() {
   const excelData = useAtomValue(excelDataAtom)
-  const headerRows = useAtomValue(headerRowsAtom)
-
   if (!excelData) return null
 
-  const { headers, rows, metadata } = excelData
-
-  // 高亮显示表头行
-  const isHeaderRow = (rowIndex: number) => rowIndex < headerRows
+  const { rows, metadata: { headerRows } } = excelData
 
   return (
-    <div className="relative rounded-md border">
-      <ScrollArea className="h-[calc(100vh-200px)] w-full">
-        <div className="min-w-max">
-          <table className="w-full border-collapse">
-            <thead className="sticky top-0 bg-background border-b">
-              <tr>
-                {headers.map((header, index) => (
-                  <th
-                    key={index}
-                    className="p-2 text-left font-medium text-sm border-r last:border-r-0"
+    <Card className="overflow-hidden">
+      <div className="relative">
+        {/* 固定表头 */}
+        <table className="w-full border-collapse">
+          <thead className="sticky top-0 z-10">
+            {Array(headerRows).fill(0).map((_, i) => (
+              <tr key={i} className="bg-card border-b">
+                {rows[i].map((cell: any, j: number) => (
+                  <th 
+                    key={j}
+                    className="p-2 text-left font-medium text-muted-foreground border-r whitespace-nowrap"
                   >
-                    {header}
+                    {cell}
                   </th>
                 ))}
               </tr>
-            </thead>
+            ))}
+          </thead>
+        </table>
+
+        {/* 数据区域 */}
+        <ScrollArea className="h-[500px]">
+          <table className="w-full border-collapse">
             <tbody>
-              {rows.map((row, rowIndex) => (
-                <tr 
-                  key={rowIndex} 
-                  className={`border-b last:border-b-0 ${
-                    isHeaderRow(rowIndex) ? 'bg-muted/50' : ''
-                  }`}
-                >
-                  {row.map((cell, cellIndex) => (
-                    <td
-                      key={cellIndex}
-                      className="p-2 border-r last:border-r-0"
-                    >
+              {rows.slice(headerRows).map((row, i) => (
+                <tr key={i} className="border-b hover:bg-muted/50">
+                  {row.map((cell: any, j: number) => (
+                    <td key={j} className="p-2 border-r">
                       {cell}
                     </td>
                   ))}
@@ -53,10 +47,8 @@ export function TablePreview() {
               ))}
             </tbody>
           </table>
-        </div>
-        <ScrollBar orientation="horizontal" />
-        <ScrollBar orientation="vertical" />
-      </ScrollArea>
-    </div>
+        </ScrollArea>
+      </div>
+    </Card>
   )
 }
