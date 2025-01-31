@@ -236,11 +236,14 @@ function expandMergedCells(dataRow: CellInfo[]): CellInfo[] {
  * 表格旋转90度，原先的行变成列，原先的列变成行
  */
 export function transformToMobileView(data: ExcelData): MobileViewTable[] {
+  
   const { rows, metadata: { headerRows } } = data
   
   // 提取表头行和数据行
   const headerRows_ = rows.slice(0, headerRows)
   const dataRows = rows.slice(headerRows)
+  
+  console.log('excel data: ', {data, headerRows_, dataRows});
   
   // 为每个数据行生成一个旋转的表格
   return dataRows.map(dataRow => {
