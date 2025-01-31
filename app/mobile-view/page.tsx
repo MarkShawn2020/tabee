@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { transformToMobileView } from "@/lib/excel"
-import { excelDataAtom } from "@/lib/store"
-import { useAtomValue } from "jotai"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft } from "lucide-react"
-import Link from "next/link"
-import { TableView } from "@/components/table-view"
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { transformToMobileView } from "@/lib/excel";
+import { excelDataAtom } from "@/lib/store";
+import { useAtomValue } from "jotai";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { MobileView } from "@/components/mobile-view";
 
 export default function MobileViewPage() {
-  const excelData = useAtomValue(excelDataAtom)
+  const excelData = useAtomValue(excelDataAtom);
 
   if (!excelData) {
     return (
@@ -20,13 +20,13 @@ export default function MobileViewPage() {
           <Button variant="outline">返回上传</Button>
         </Link>
       </div>
-    )
+    );
   }
 
-  const { headers, rows, sheetName } = excelData
-  const mobileRows = transformToMobileView(excelData)
+  const { headers, rows, sheetName } = excelData;
+  const mobileRows = transformToMobileView(excelData);
 
-  console.log({headers, rows, sheetName, mobileRows});
+  console.log({ headers, rows, sheetName, mobileRows });
 
   return (
     <div className="container py-4 space-y-4">
@@ -41,9 +41,9 @@ export default function MobileViewPage() {
 
       <ScrollArea className="h-[calc(100vh-150px)]">
         <div className="space-y-4 pb-4">
-          <TableView />
+          <MobileView />
         </div>
       </ScrollArea>
     </div>
-  )
+  );
 }
