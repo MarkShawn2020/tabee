@@ -1,16 +1,44 @@
-import Hero from "@/components/hero";
-import ConnectSupabaseSteps from "@/components/tutorial/connect-supabase-steps";
-import SignUpUserSteps from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
+'use client';
 
-export default async function Home() {
+import { useAtomValue } from 'jotai';
+import { UploadZone } from '@/components/upload-zone';
+import { TableView } from '@/components/table-view';
+import { excelDataAtom, errorAtom, loadingAtom } from '@/lib/store';
+
+export default function Home() {
+  const excelData = useAtomValue(excelDataAtom);
+  const loading = useAtomValue(loadingAtom);
+  const error = useAtomValue(errorAtom);
+
   return (
-    <>
-      <Hero />
-      <main className="flex-1 flex flex-col gap-6 px-4">
-        <h2 className="font-medium text-xl mb-4">Next steps</h2>
-        {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-      </main>
-    </>
+    <main className="container mx-auto p-4 space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold">TaBee</h1>
+        <p className="text-gray-500">
+          Smart Excel viewer optimized for mobile devices
+        </p>
+      </div>
+
+      {!excelData && (
+        <div className="max-w-xl mx-auto">
+          <UploadZone />
+        </div>
+      )}
+
+      {loading && (
+        <div className="text-center">
+          <div className="animate-spin text-2xl">🐝</div>
+          <p>Processing your Excel file...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="max-w-xl mx-auto p-4 bg-red-50 text-red-600 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {excelData && <TableView />}
+    </main>
   );
 }
