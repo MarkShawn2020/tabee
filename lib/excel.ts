@@ -108,17 +108,25 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
 }
 
 export function transformToMobileView(data: ExcelData) {
-  const { headers, rows, metadata } = data;
+  const { rows, metadata } = data;
   const headerRows = metadata.headerRows || 1;
   
-  // 获取实际的数据行（排除表头行）
+  // 获取表头行和数据行
+  const headerRows_ = rows.slice(0, headerRows);
   const dataRows = rows.slice(headerRows);
   
   // 转换为移动视图格式
-  return dataRows.map(row => {
-    return headers.map((header, index) => ({
-      header,
-      value: row[index] || '' // 确保空值显示为空字符串
-    }));
+  return dataRows.map(dataRow => {
+    // 对每一列，收集所有表头行的值作为完整的表头
+    return dataRow.map((value, colIndex) => {
+      const header = headerRows_
+        .map(headerRow => headerRow[colIndex] || '')
+        .join(' - ');
+      
+      return {
+        header,
+        value: value || ''  // 确保空值显示为空字符串
+      };
+    });
   });
 }

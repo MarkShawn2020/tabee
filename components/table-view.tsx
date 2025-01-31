@@ -18,7 +18,7 @@ export function TableView() {
   const { headers, rows, sheetName } = excelData;
   const mobileRows = transformToMobileView(excelData);
 
-  console.log({ structureAnalysis });
+  console.log({ structureAnalysis, excelData, mobileRows });
 
   return (
     <div className="space-y-4">
