@@ -59,7 +59,7 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
   
   // Create DataFrame
   const df = new DataFrame(rawData);
-  const shape = df.shape as [number, number]; // 确保类型为元组
+  const shape = df.shape as [number, number];
   
   console.log('📊 Original data info:', {
     shape,
@@ -73,11 +73,11 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
   df.head(10).print();
 
   // Remove empty rows
-  const cleanedDf = df.dropna({ how: 'all', axis: 0 });
+  const cleanedDf = df.dropNa({ axis: 0, how: 'all' });
   const emptyRowsRemoved = shape[0] - cleanedDf.shape[0];
 
   // Remove empty columns
-  const cleanedDf2 = cleanedDf.dropna({ how: 'all', axis: 1 });
+  const cleanedDf2 = cleanedDf.dropNa({ axis: 1, how: 'all' });
   const emptyColsRemoved = cleanedDf.shape[1] - cleanedDf2.shape[1];
 
   console.log('🧹 Cleaning results:', {
