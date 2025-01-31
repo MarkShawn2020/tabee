@@ -8,8 +8,7 @@ export interface ExcelData {
   metadata: {
     originalShape: [number, number];
     cleanedShape: [number, number];
-    emptyRowsRemoved: number;
-    emptyColsRemoved: number;
+    headerRows?: number;
   };
 }
 
@@ -73,38 +72,33 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
   df.head(10).print();
 
   // Remove empty rows
-  const cleanedDf = df.dropNa({ axis: 0, inplace: false });
-  const emptyRowsRemoved = shape[0] - cleanedDf.shape[0];
-
+  // df.dropNa({ axis: 0, inplace: true,  });
   // Remove empty columns
-  const cleanedDf2 = cleanedDf.dropNa({ axis: 1, inplace: false });
-  const emptyColsRemoved = cleanedDf.shape[1] - cleanedDf2.shape[1];
+  // df.dropNa({ axis: 1, inplace: true });
 
   console.log('🧹 Cleaning results:', {
-    emptyRowsRemoved,
-    emptyColsRemoved,
-    finalShape: cleanedDf2.shape
+    finalShape: df.shape
   });
 
   // Validate dimensions
-  if (cleanedDf2.shape[0] > MAX_ROWS) {
+  if (df.shape[0] > MAX_ROWS) {
     console.warn('❌ Too many rows:', {
-      actualRows: cleanedDf2.shape[0],
+      actualRows: df.shape[0],
       maxRows: MAX_ROWS
     });
     throw new ExcelError(`Sheet exceeds ${MAX_ROWS} rows limit`);
   }
-  if (cleanedDf2.shape[1] > MAX_COLS) {
+  if (df.shape[1] > MAX_COLS) {
     console.warn('❌ Too many columns:', {
-      actualColumns: cleanedDf2.shape[1],
+      actualColumns: df.shape[1],
       maxColumns: MAX_COLS
     });
     throw new ExcelError(`Sheet exceeds ${MAX_COLS} columns limit`);
   }
 
   // Extract headers and rows
-  const headers = cleanedDf2.columns.map(String);
-  const rows = cleanedDf2.values as any[][];
+  const headers = df.columns.map(String);
+  const rows = df.values as any[][];
 
   console.log('✅ Excel parsing completed:', {
     headers: headers.length,
@@ -117,44 +111,23 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
     sheetName: firstSheetName,
     metadata: {
       originalShape: shape,
-      cleanedShape: cleanedDf2.shape as [number, number],
-      emptyRowsRemoved,
-      emptyColsRemoved
+      cleanedShape: df.shape as [number, number],
     }
   };
 }
 
 export function transformToMobileView(data: ExcelData) {
-  console.log('🔄 Starting mobile view transformation');
+  const { headers, rows, metadata } = data;
+  const headerRows = metadata.headerRows || 1;
   
-  // Create DataFrame for better data manipulation
-  const df = new DataFrame(data.rows, { columns: data.headers });
+  // 获取实际的数据行（排除表头行）
+  const dataRows = rows.slice(headerRows);
   
-  console.log('📊 Data shape for mobile transformation:', df.shape);
-  
-  // Transform to mobile-friendly format
-  const values = df.values as unknown as any[][];
-  const mobileRows = values.map((row, rowIndex) => {
-    const transformedRow = df.columns.map((header, colIndex) => ({
+  // 转换为移动视图格式
+  return dataRows.map(row => {
+    return headers.map((header, index) => ({
       header,
-      value: row[colIndex],
+      value: row[index]
     }));
-
-    // Log sample transformations
-    if (rowIndex === 0 || rowIndex === df.shape[0] - 1) {
-      console.log(`📱 Sample row ${rowIndex}:`, {
-        original: row,
-        transformed: transformedRow
-      });
-    }
-
-    return transformedRow;
   });
-
-  console.log('✅ Mobile transformation completed:', {
-    totalRows: mobileRows.length,
-    rowFormat: 'Array<{ header: string, value: any }>'
-  });
-
-  return mobileRows;
 }

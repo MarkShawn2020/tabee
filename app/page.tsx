@@ -3,12 +3,14 @@
 import { useAtomValue } from 'jotai';
 import { UploadZone } from '@/components/upload-zone';
 import { TableView } from '@/components/table-view';
-import { excelDataAtom, errorAtom, loadingAtom } from '@/lib/store';
+import { TablePreview } from "@/components/table-preview";
+import { excelDataAtom, errorAtom, loadingAtom, viewModeAtom } from '@/lib/store';
 
 export default function Home() {
   const excelData = useAtomValue(excelDataAtom);
   const loading = useAtomValue(loadingAtom);
   const error = useAtomValue(errorAtom);
+  const viewMode = useAtomValue(viewModeAtom);
 
   return (
     <main className="container mx-auto p-4 space-y-8">
@@ -38,7 +40,11 @@ export default function Home() {
         </div>
       )}
 
-      {excelData && <TableView />}
+      {excelData && (
+        <div>
+          {viewMode === 'table' ? <TablePreview /> : <TableView />}
+        </div>
+      )}
     </main>
   );
 }
