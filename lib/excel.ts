@@ -192,7 +192,7 @@ function forwardFillColumn(data: any[][], colIndex: number, startRow: number): v
 }
 
 export interface MobileViewTable {
-  rows: CellInfo[][]  // 旋转后的行数据，每行包含表头和值
+  rows: CellInfo[][]  // 旋转后的行数据，每行是一个字段，包含表头和值
 }
 
 /**
@@ -209,18 +209,46 @@ export function transformToMobileView(data: ExcelData): MobileViewTable[] {
   return dataRows.map(dataRow => {
     const pivotedRows: CellInfo[][] = []
     
-    // 遍历每一列，生成新的行
+    // 遍历每一列
     for (let colIndex = 0; colIndex < dataRow.length; colIndex++) {
+      const value = dataRow[colIndex]
       // 跳过空列
-      if (dataRow[colIndex].value === null) continue
+      if (value.value === null) continue
       
-      // 获取该列的所有表头和数据
-      const row = [
-        ...headerRows_.map(headerRow => headerRow[colIndex]),
-        dataRow[colIndex]
-      ]
+      // 获取该列的所有表头
+      const headerCells = headerRows_.map(headerRow => headerRow[colIndex])
+      // 如果所有表头都是空的，跳过这一列
+      if (headerCells.every(cell => !cell.value)) continue
       
-      pivotedRows.push(row)
+      // 创建新的行
+      const newRow: CellInfo[] = new Array(headerRows + 1).fill(null).map(() => ({ value: null }))
+      
+      // 处理表头单元格
+      for (let i = 0; i < headerCells.length; i++) {
+        const cell = headerCells[i]
+        if (cell.value === null) continue
+        
+        // 如果原来有 rowSpan，现在变成 colSpan
+        newRow[i] = {
+          value: cell.value,
+          colSpan: cell.rowSpan,
+          rowSpan: cell.colSpan
+        }
+        
+        // 如果有 colSpan，将后面的单元格标记为已使用
+        if (cell.rowSpan) {
+          for (let j = 1; j < cell.rowSpan; j++) {
+            if (i + j < headerRows) {
+              newRow[i + j] = { value: null }
+            }
+          }
+        }
+      }
+      
+      // 添加数据值作为最后一列
+      newRow[headerRows] = value
+      
+      pivotedRows.push(newRow)
     }
     
     return { rows: pivotedRows }
