@@ -1,5 +1,4 @@
 import { read, utils } from 'xlsx';
-import { DataFrame } from 'danfojs';
 
 export interface ExcelData {
   headers: string[];
@@ -37,12 +36,6 @@ function forwardFillColumn(data: any[][], colIndex: number, startRow: number): v
 }
 
 export async function parseExcelFile(file: File): Promise<ExcelData> {
-  console.log('🔍 Starting Excel file parsing:', {
-    fileName: file.name,
-    fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
-    fileType: file.type
-  });
-
   if (file.size > MAX_FILE_SIZE) {
     throw new ExcelError(`File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`);
   }
@@ -55,6 +48,7 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
   // 获取表格的实际范围
   const range = utils.decode_range(worksheet['!ref'] || 'A1');
   const totalCols = range.e.c - range.s.c + 1;
+  const totalRows = range.e.r - range.s.r + 1;
 
   // 转换为数组，保留空单元格和合并单元格信息
   const rawData = utils.sheet_to_json(worksheet, {
@@ -72,28 +66,24 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
     return newRow;
   });
 
-  // Create DataFrame with normalized data
-  const df = new DataFrame(normalizedData);
-  const shape = df.shape as [number, number];
-
-  if (df.shape[0] > MAX_ROWS) {
+  if (normalizedData.length > MAX_ROWS) {
     throw new ExcelError(`Sheet exceeds ${MAX_ROWS} rows limit`);
   }
-  if (df.shape[1] > MAX_COLS) {
+  if (totalCols > MAX_COLS) {
     throw new ExcelError(`Sheet exceeds ${MAX_COLS} columns limit`);
   }
 
   // 提取列名和数据
-  const headers = df.columns.map(String);
-  const rows = df.values as any[][];
+  const headers = normalizedData[0] || [];
+  const rows = normalizedData;
 
   return {
     headers,
     rows,
     sheetName: firstSheetName,
     metadata: {
-      originalShape: shape,
-      cleanedShape: df.shape as [number, number],
+      originalShape: [totalRows, totalCols],
+      cleanedShape: [normalizedData.length, totalCols],
     }
   };
 }
@@ -115,8 +105,7 @@ export function transformToMobileView(data: ExcelData) {
   }
   
   // 转换为移动视图格式
-  return filledDataRows.map((dataRow, rowIndex) => {
-    // 对每一列，收集所有表头行的值作为完整的表头
+  return filledDataRows.map(dataRow => {
     return dataRow.map((value, colIndex) => {
       // 构建多级表头
       const header = headerRows_
@@ -126,7 +115,7 @@ export function transformToMobileView(data: ExcelData) {
       
       return {
         header,
-        value: value
+        value
       };
     });
   });

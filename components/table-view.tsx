@@ -23,9 +23,9 @@ export function TableView() {
   return (
     <div className="space-y-4">
       {/* 结构化分析结果 */}
-      {structureAnalysis && (
+      {/* {structureAnalysis && (
         <StructureAnalysis structureAnalysis={structureAnalysis} />
-      )}
+      )} */}
 
       <ScrollArea className="h-[calc(100vh-200px)] rounded-md border">
         {viewMode === "table" ? (
