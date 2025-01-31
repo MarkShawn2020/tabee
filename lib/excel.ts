@@ -191,55 +191,38 @@ function forwardFillColumn(data: any[][], colIndex: number, startRow: number): v
   }
 }
 
-/**
- * 在数据中查找合并单元格的实际值
- */
-function findMergedCellValue(
-  rows: CellInfo[][],
-  rowIndex: number,
-  colIndex: number,
-  headerRows: number
-): CellInfo {
-  // 向上查找直到找到实际值
-  for (let i = rowIndex; i >= headerRows; i--) {
-    const cell = rows[i][colIndex]
-    if (cell.value !== null) {
-      return cell
-    }
-  }
-  // 如果在数据行中没找到，返回原始单元格
-  return rows[rowIndex][colIndex]
+export interface MobileViewTable {
+  rows: CellInfo[][]  // 旋转后的行数据，每行包含表头和值
 }
 
 /**
- * 转换为移动视图格式
+ * 转换为移动视图格式，每个数据行生成一个旋转90度的表格
  */
-export function transformToMobileView(data: ExcelData): Record<string, CellInfo>[] {
+export function transformToMobileView(data: ExcelData): MobileViewTable[] {
   const { rows, metadata: { headerRows } } = data
   
-  // 提取表头行
+  // 提取表头行和数据行
   const headerRows_ = rows.slice(0, headerRows)
+  const dataRows = rows.slice(headerRows)
   
-  // 预先计算所有可能的表头
-  const headers = Array(headerRows_[0].length).fill(0).map((_, colIndex) => {
-    return headerRows_
-      .map(headerRow => headerRow[colIndex].value)
-      .filter(h => h !== '') // 移除空字符串
-      .join(' - ')
-  })
-  
-  // 转换数据行
-  return rows.slice(headerRows).map((dataRow, rowIndex) => {
-    const result: Record<string, CellInfo> = {}
+  // 为每个数据行生成一个旋转的表格
+  return dataRows.map(dataRow => {
+    const pivotedRows: CellInfo[][] = []
     
-    // 确保每个表头都存在
-    headers.forEach((header, colIndex) => {
-      const cell = dataRow[colIndex]
-      result[header] = cell.value === null 
-        ? findMergedCellValue(rows, rowIndex + headerRows, colIndex, headerRows)
-        : cell
-    })
+    // 遍历每一列，生成新的行
+    for (let colIndex = 0; colIndex < dataRow.length; colIndex++) {
+      // 跳过空列
+      if (dataRow[colIndex].value === null) continue
+      
+      // 获取该列的所有表头和数据
+      const row = [
+        ...headerRows_.map(headerRow => headerRow[colIndex]),
+        dataRow[colIndex]
+      ]
+      
+      pivotedRows.push(row)
+    }
     
-    return result
+    return { rows: pivotedRows }
   })
 }

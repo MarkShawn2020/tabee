@@ -7,6 +7,7 @@ import { useAtomValue } from "jotai"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
+import { TableView } from "@/components/table-view"
 
 export default function MobileViewPage() {
   const excelData = useAtomValue(excelDataAtom)
@@ -40,21 +41,7 @@ export default function MobileViewPage() {
 
       <ScrollArea className="h-[calc(100vh-150px)]">
         <div className="space-y-4 pb-4">
-          {mobileRows.map((row, rowIndex) => (
-            <div
-              key={rowIndex}
-              className="p-4 space-y-2 rounded-lg border bg-card"
-            >
-              {row.map(({ header, value }, cellIndex) => (
-                <div key={cellIndex} className="flex justify-between gap-4">
-                  <div className="font-medium text-sm text-muted-foreground">
-                    {header}
-                  </div>
-                  <div className="text-right">{value}</div>
-                </div>
-              ))}
-            </div>
-          ))}
+          <TableView />
         </div>
       </ScrollArea>
     </div>
