@@ -10,6 +10,7 @@ import { stepAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom, maxHead
 import { rawExcelAtom, excelDataAtom } from "@/lib/store"
 import { useAtom, useAtomValue } from "jotai"
 import { processSheetData } from "@/lib/excel"
+import { ScrollAreaScrollbar } from "@radix-ui/react-scroll-area"
 
 export function WorksheetSelector() {
   const [, setStep] = useAtom(stepAtom)
@@ -93,14 +94,14 @@ export function WorksheetSelector() {
       </Card>
 
       {currentData.length > 0 && (
-        <Card className="overflow-hidden">
+        <Card>
           <div className="p-4 border-b bg-muted/50">
             <Label>预览</Label>
           </div>
-          <ScrollArea className="h-[300px]">
-            <div className="p-4">
-              <div className="overflow-x-auto">
-                <table className="border-collapse w-full overflow-scroll table-fixed">
+          <div className="h-[300px] relative">
+            <div className="absolute inset-0 overflow-auto touch-pan-x touch-pan-y overscroll-x-contain">
+              <div className="p-4 min-w-full">
+                <table className="w-full border-collapse">
                   <tbody>
                     {currentData.slice(0, 5).map((row, rowIndex) => (
                       <tr 
@@ -112,9 +113,10 @@ export function WorksheetSelector() {
                           return (
                             <td 
                               key={cellIndex} 
-                              className="p-2 border-r whitespace-nowrap"
+                              className="p-2 border-r break-words"
                               rowSpan={cell.rowSpan}
                               colSpan={cell.colSpan}
+                              style={{ minWidth: '120px' }}
                             >
                               {cell.value}
                             </td>
@@ -126,7 +128,7 @@ export function WorksheetSelector() {
                 </table>
               </div>
             </div>
-          </ScrollArea>
+          </div>
         </Card>
       )}
 

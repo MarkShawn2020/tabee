@@ -44,7 +44,7 @@ export default function Home() {
       
       case 'select':
         return (
-          <div className="w-full mx-auto">
+          <div className="w-full max-w-5xl mx-auto">
             <WorksheetSelector />
           </div>
         )
@@ -52,7 +52,7 @@ export default function Home() {
       case 'view':
         if (!excelData) return null
         return (
-          <div className="space-y-4 px-4">
+          <div className="w-full max-w-5xl mx-auto space-y-4">
             <div className="flex items-center justify-end gap-4">
               <div className="flex items-center gap-2">
                 <Label htmlFor="view-mode" className="hidden sm:inline-block">移动视图</Label>
@@ -72,7 +72,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container mx-auto py-4">
+        <div className="w-full max-w-5xl mx-auto py-4">
           <div className="text-center space-y-4">
             <h1 className="text-xl sm:text-2xl font-bold">TaBee</h1>
             <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2">
@@ -107,7 +107,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="container mx-auto py-4">
+      <div className="py-4">
         {loading && (
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
