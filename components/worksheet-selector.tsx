@@ -3,14 +3,13 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Slider } from "@/components/ui/slider"
-import { stepAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom, maxHeaderRowsAtom } from "@/lib/store/steps"
+import { stepAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom } from "@/lib/store/steps"
 import { rawExcelAtom, excelDataAtom } from "@/lib/store"
 import { useAtom, useAtomValue } from "jotai"
 import { processSheetData } from "@/lib/excel"
-import { ScrollAreaScrollbar } from "@radix-ui/react-scroll-area"
 
 export function WorksheetSelector() {
   const [, setStep] = useAtom(stepAtom)
@@ -19,7 +18,6 @@ export function WorksheetSelector() {
   const [headerRows, setHeaderRows] = useAtom(headerRowsAtom)
   const rawExcel = useAtomValue(rawExcelAtom)
   const [, setExcelData] = useAtom(excelDataAtom)
-  const maxHeaderRows = useAtomValue(maxHeaderRowsAtom)
 
   if (!rawExcel) return null
 
@@ -53,9 +51,9 @@ export function WorksheetSelector() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="p-4 space-y-6">
-        <div className="grid gap-6">
+    <div className="w-full space-y-8">
+      <Card className="p-4 space-y-4">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>工作表</Label>
             <Select value={selectedSheet} onValueChange={setSelectedSheet}>
@@ -73,20 +71,14 @@ export function WorksheetSelector() {
           </div>
 
           {currentData.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>表头行数</Label>
-                <span className="text-sm text-muted-foreground">
-                  {headerRows} / {maxHeaderRows}
-                </span>
-              </div>
-              <Slider
-                value={[headerRows]}
-                onValueChange={([value]) => setHeaderRows(value)}
-                min={0}
-                max={maxHeaderRows}
-                step={1}
-                className="w-full"
+            <div className="space-y-2">
+              <Label>表头行数</Label>
+              <Input
+                type="number"
+                value={headerRows}
+                onChange={e => setHeaderRows(Number(e.target.value))}
+                min={1}
+                max={Math.max(1, currentData.length - 1)}
               />
             </div>
           )}
@@ -94,39 +86,34 @@ export function WorksheetSelector() {
       </Card>
 
       {currentData.length > 0 && (
-        <Card>
-          <div className="p-4 border-b bg-muted/50">
-            <Label>预览</Label>
-          </div>
-          <div className="h-[300px] relative">
-            <div className="absolute inset-0 overflow-auto touch-pan-x touch-pan-y overscroll-x-contain">
-              <div className="p-4 min-w-full">
-                <table className="w-full border-collapse">
-                  <tbody>
-                    {currentData.slice(0, 5).map((row, rowIndex) => (
-                      <tr 
-                        key={rowIndex}
-                        className={`border-b ${rowIndex < headerRows ? 'bg-muted/50' : ''}`}
-                      >
-                        {row.map((cell, cellIndex) => {
-                          if (cell.value === null) return null
-                          return (
-                            <td 
-                              key={cellIndex} 
-                              className="p-2 border-r break-words"
-                              rowSpan={cell.rowSpan}
-                              colSpan={cell.colSpan}
-                              style={{ minWidth: '120px' }}
-                            >
-                              {cell.value}
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+        <Card className="w-full p-4 space-y-4">
+          <Label>预览</Label>
+          <div className="h-[300px] w-full rounded-md border">
+            <div className="w-full h-full p-4 overflow-auto">
+              <table className="w-full">
+                <tbody>
+                  {currentData.slice(0, 5).map((row, rowIndex) => (
+                    <tr 
+                      key={rowIndex}
+                      className={`border-b ${rowIndex < headerRows ? 'bg-muted/50' : ''}`}
+                    >
+                      {row.map((cell, cellIndex) => {
+                        if (cell.value === null) return null
+                        return (
+                          <td 
+                            key={cellIndex} 
+                            className="p-2 border-r"
+                            rowSpan={cell.rowSpan}
+                            colSpan={cell.colSpan}
+                          >
+                            {cell.value}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </Card>
