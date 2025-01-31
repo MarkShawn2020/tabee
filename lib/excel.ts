@@ -192,6 +192,26 @@ function forwardFillColumn(data: any[][], colIndex: number, startRow: number): v
 }
 
 /**
+ * 在数据中查找合并单元格的实际值
+ */
+function findMergedCellValue(
+  rows: CellInfo[][],
+  rowIndex: number,
+  colIndex: number,
+  headerRows: number
+): CellInfo {
+  // 向上查找直到找到实际值
+  for (let i = rowIndex; i >= headerRows; i--) {
+    const cell = rows[i][colIndex]
+    if (cell.value !== null) {
+      return cell
+    }
+  }
+  // 如果在数据行中没找到，返回原始单元格
+  return rows[rowIndex][colIndex]
+}
+
+/**
  * 转换为移动视图格式
  */
 export function transformToMobileView(data: ExcelData): Record<string, CellInfo>[] {
@@ -200,21 +220,24 @@ export function transformToMobileView(data: ExcelData): Record<string, CellInfo>
   // 提取表头行
   const headerRows_ = rows.slice(0, headerRows)
   
+  // 预先计算所有可能的表头
+  const headers = Array(headerRows_[0].length).fill(0).map((_, colIndex) => {
+    return headerRows_
+      .map(headerRow => headerRow[colIndex].value)
+      .filter(h => h !== '') // 移除空字符串
+      .join(' - ')
+  })
+  
   // 转换数据行
-  return rows.slice(headerRows).map(dataRow => {
+  return rows.slice(headerRows).map((dataRow, rowIndex) => {
     const result: Record<string, CellInfo> = {}
     
-    dataRow.forEach((cell, colIndex) => {
-      // 如果是被合并的单元格，跳过
-      if (cell.value === null) return
-      
-      // 构建多级表头
-      const header = headerRows_
-        .map(headerRow => headerRow[colIndex].value)
-        .filter(h => h !== '') // 移除空字符串
-        .join(' - ')
-      
-      result[header] = cell
+    // 确保每个表头都存在
+    headers.forEach((header, colIndex) => {
+      const cell = dataRow[colIndex]
+      result[header] = cell.value === null 
+        ? findMergedCellValue(rows, rowIndex + headerRows, colIndex, headerRows)
+        : cell
     })
     
     return result
