@@ -6,6 +6,7 @@ import { UploadZone } from '@/components/upload-zone'
 import { WorksheetSelector } from "@/components/worksheet-selector"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { ViewModeSwitch } from '@/components/ui/view-mode-switch'
 import { excelDataAtom, errorAtom, loadingAtom, viewModeAtom } from '@/lib/store'
 import { Step as StepType, stepAtom } from "@/lib/store/steps"
 import { useAtom, useAtomValue } from 'jotai'
@@ -53,15 +54,11 @@ export default function Home() {
         if (!excelData) return null
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-end gap-4">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="view-mode">移动视图</Label>
-                <Switch
-                  id="view-mode"
-                  checked={viewMode === "series"}
-                  onCheckedChange={(checked) => setViewMode(checked ? "series" : "table")}
-                />
-              </div>
+            <div className="flex justify-end">
+              <ViewModeSwitch
+                mode={viewMode}
+                onChange={(mode) => setViewMode(mode)}
+              />
             </div>
             {viewMode === 'table' ? <TablePreview /> : <TableView />}
           </div>
