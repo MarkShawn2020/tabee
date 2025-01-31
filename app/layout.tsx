@@ -60,7 +60,7 @@ export default function RootLayout({
                 </div>
               </nav>
               <div className="flex-1 w-full overflow-hidden">
-                <div className="max-w-5xl mx-auto px-4">
+                <div className="max-w-5xl mx-auto">
                   {children}
                 </div>
               </div>
