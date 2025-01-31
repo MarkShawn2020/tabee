@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Background hexagon (honeycomb cell) -->
-    <path d="M256 40L432 144V352L256 456L80 352V144L256 40Z" fill="#FFF4D9"/>
-    
-    <!-- Tab shape -->
-    <path d="M160 180H352C364 180 374 190 374 202V342C374 354 364 364 352 364H160C148 364 138 354 138 342V202C138 190 148 180 160 180Z" fill="#FFB800"/>
-    
-    <!-- Bee stripes -->
-    <path d="M200 240H312M200 280H312M200 320H312" stroke="#4A3500" stroke-width="24" stroke-linecap="round"/>
-    
-    <!-- Bee wings -->
-    <path d="M374 240C394 220 394 260 374 280M138 240C118 220 118 260 138 280" stroke="#FFD970" stroke-width="16" stroke-linecap="round"/>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hexagonal Grid (representing honeycomb/table cells) -->
+  <g transform="translate(40, 40)">
+    <path d="M60 0L108.5 28L108.5 84L60 112L11.5 84L11.5 28L60 0Z" fill="#FFB800" stroke="#1A1A1A" stroke-width="3"/>
+    <path d="M65 20L93.5 36L93.5 72L65 88L36.5 72L36.5 36L65 20Z" fill="#FFE066" stroke="#1A1A1A" stroke-width="2"/>
+  </g>
+  
+  <!-- Bee Wings -->
+  <path d="M130 80C150 60 160 70 150 90C170 80 165 100 150 110" fill="none" stroke="#1A1A1A" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Text -->
+  <text x="100" y="160" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#1A1A1A">
+    tabee
+  </text>
 </svg>
