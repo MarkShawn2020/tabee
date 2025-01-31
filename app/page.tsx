@@ -73,7 +73,7 @@ export default function Home() {
     <main className="w-full container mx-auto p-4 space-y-8">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold">TaBee</h1>
-        <div className="flex flex-col xs:flex-row items-center justify-center gap-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
           <Step 
             step="upload" 
             active={step === 'upload'} 
