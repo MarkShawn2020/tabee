@@ -25,6 +25,8 @@ export default function MobileViewPage() {
   const { headers, rows, sheetName } = excelData
   const mobileRows = transformToMobileView(excelData)
 
+  console.log({headers, rows, sheetName, mobileRows});
+
   return (
     <div className="container py-4 space-y-4">
       <div className="flex items-center gap-4">
