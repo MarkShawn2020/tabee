@@ -48,21 +48,17 @@ export default function RootLayout({
                       <DeployButton />
                     </div>
                   </div>
-                  <div className="flex items-center gap-5">
-                    {!hasEnvVars ? (
-                      <EnvVarWarning />
-                    ) : (
-                      <Suspense fallback={<div>Loading...</div>}>
-                        <HeaderAuth />
-                      </Suspense>
-                    )}
-                  </div>
+                  {!hasEnvVars ? (
+                    <EnvVarWarning />
+                  ) : (
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <HeaderAuth />
+                    </Suspense>
+                  )}
                 </div>
               </nav>
-              <div className="flex-1 w-full overflow-hidden">
-                <div className="max-w-5xl mx-auto">
-                  {children}
-                </div>
+              <div className="flex flex-col gap-20 max-w-5xl ">
+                {children}
               </div>
 
               <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">

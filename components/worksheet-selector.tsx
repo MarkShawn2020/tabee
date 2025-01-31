@@ -3,10 +3,10 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { stepAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom } from "@/lib/store/steps"
+import { Slider } from "@/components/ui/slider"
+import { stepAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom, maxHeaderRowsAtom } from "@/lib/store/steps"
 import { rawExcelAtom, excelDataAtom } from "@/lib/store"
 import { useAtom, useAtomValue } from "jotai"
 import { processSheetData } from "@/lib/excel"
@@ -18,6 +18,7 @@ export function WorksheetSelector() {
   const [headerRows, setHeaderRows] = useAtom(headerRowsAtom)
   const rawExcel = useAtomValue(rawExcelAtom)
   const [, setExcelData] = useAtom(excelDataAtom)
+  const maxHeaderRows = useAtomValue(maxHeaderRowsAtom)
 
   if (!rawExcel) return null
 
@@ -71,21 +72,21 @@ export function WorksheetSelector() {
           </div>
 
           {currentData.length > 0 && (
-            <div className="space-y-2">
-              <Label>表头行数</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  value={headerRows}
-                  onChange={e => setHeaderRows(Number(e.target.value))}
-                  min={1}
-                  max={Math.max(1, currentData.length - 1)}
-                  className="w-24"
-                />
-                <div className="text-sm text-muted-foreground pt-2">
-                  最大: {Math.max(1, currentData.length - 1)}
-                </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>表头行数</Label>
+                <span className="text-sm text-muted-foreground">
+                  {headerRows} / {maxHeaderRows}
+                </span>
               </div>
+              <Slider
+                value={[headerRows]}
+                onValueChange={([value]) => setHeaderRows(value)}
+                min={0}
+                max={maxHeaderRows}
+                step={1}
+                className="w-full"
+              />
             </div>
           )}
         </div>
@@ -96,10 +97,10 @@ export function WorksheetSelector() {
           <div className="p-4 border-b bg-muted/50">
             <Label>预览</Label>
           </div>
-          <div className="h-[300px] overflow-y-auto">
+          <ScrollArea className="h-[300px]">
             <div className="p-4">
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
+                <table className="border-collapse w-full overflow-scroll table-fixed">
                   <tbody>
                     {currentData.slice(0, 5).map((row, rowIndex) => (
                       <tr 
@@ -111,17 +112,11 @@ export function WorksheetSelector() {
                           return (
                             <td 
                               key={cellIndex} 
-                              className="p-2 border-r whitespace-normal"
-                              style={{
-                                minWidth: '120px',
-                                maxWidth: '300px'
-                              }}
+                              className="p-2 border-r whitespace-nowrap"
                               rowSpan={cell.rowSpan}
                               colSpan={cell.colSpan}
                             >
-                              <div className="break-words">
-                                {cell.value}
-                              </div>
+                              {cell.value}
                             </td>
                           )
                         })}
@@ -131,7 +126,7 @@ export function WorksheetSelector() {
                 </table>
               </div>
             </div>
-          </div>
+          </ScrollArea>
         </Card>
       )}
 
