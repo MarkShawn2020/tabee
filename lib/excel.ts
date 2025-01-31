@@ -192,11 +192,48 @@ function forwardFillColumn(data: any[][], colIndex: number, startRow: number): v
 }
 
 export interface MobileViewTable {
-  rows: CellInfo[][]  // 旋转后的行数据，每行是一个字段，包含表头和值
+  headers: CellInfo[][]  // 表头行
+  data: CellInfo[]      // 数据行
 }
 
 /**
- * 转换为移动视图格式，每个数据行生成一个旋转90度的表格
+ * 展开数据行中的合并单元格，填充实际值
+ */
+function expandMergedCells(dataRow: CellInfo[]): CellInfo[] {
+  const expandedRow: CellInfo[] = []
+  
+  for (let i = 0; i < dataRow.length; i++) {
+    const cell = dataRow[i]
+    if (cell.value === null) continue
+    
+    // 如果有合并单元格，填充相同的值
+    const rowSpan = cell.rowSpan || 1
+    const colSpan = cell.colSpan || 1
+    
+    // 填充实际值
+    expandedRow.push({
+      value: cell.value,
+      rowSpan: 1,
+      colSpan: 1
+    })
+    
+    // 如果有跨列，填充额外的列
+    for (let j = 1; j < colSpan; j++) {
+      expandedRow.push({
+        value: cell.value,
+        rowSpan: 1,
+        colSpan: 1
+      })
+    }
+  }
+  
+  return expandedRow
+}
+
+/**
+ * 转换为移动视图格式
+ * 将原始表格按行拆分，每行生成一个独立的表格
+ * 表格旋转90度，原先的行变成列，原先的列变成行
  */
 export function transformToMobileView(data: ExcelData): MobileViewTable[] {
   const { rows, metadata: { headerRows } } = data
@@ -207,50 +244,40 @@ export function transformToMobileView(data: ExcelData): MobileViewTable[] {
   
   // 为每个数据行生成一个旋转的表格
   return dataRows.map(dataRow => {
-    const pivotedRows: CellInfo[][] = []
+    const headers: CellInfo[][] = []
+    const data: CellInfo[] = []
+    
+    // 展开数据行中的合并单元格
+    const expandedDataRow = expandMergedCells(dataRow)
     
     // 遍历每一列
-    for (let colIndex = 0; colIndex < dataRow.length; colIndex++) {
-      const value = dataRow[colIndex]
+    for (let colIndex = 0; colIndex < expandedDataRow.length; colIndex++) {
+      const value = expandedDataRow[colIndex]
       // 跳过空列
       if (value.value === null) continue
       
       // 获取该列的所有表头
-      const headerCells = headerRows_.map(headerRow => headerRow[colIndex])
+      const headerCells = headerRows_.map(headerRow => {
+        const cell = headerRow[colIndex]
+        if (cell.value === null) return cell
+        
+        // 交换 rowSpan 和 colSpan
+        return {
+          value: cell.value,
+          rowSpan: cell.colSpan || 1,  // 原来的 colSpan 变成 rowSpan
+          colSpan: cell.rowSpan || 1   // 原来的 rowSpan 变成 colSpan
+        }
+      })
+      
       // 如果所有表头都是空的，跳过这一列
       if (headerCells.every(cell => !cell.value)) continue
       
-      // 创建新的行
-      const newRow: CellInfo[] = new Array(headerRows + 1).fill(null).map(() => ({ value: null }))
-      
-      // 处理表头单元格
-      for (let i = 0; i < headerCells.length; i++) {
-        const cell = headerCells[i]
-        if (cell.value === null) continue
-        
-        // 如果原来有 rowSpan，现在变成 colSpan
-        newRow[i] = {
-          value: cell.value,
-          colSpan: cell.rowSpan,
-          rowSpan: cell.colSpan
-        }
-        
-        // 如果有 colSpan，将后面的单元格标记为已使用
-        if (cell.rowSpan) {
-          for (let j = 1; j < cell.rowSpan; j++) {
-            if (i + j < headerRows) {
-              newRow[i + j] = { value: null }
-            }
-          }
-        }
-      }
-      
-      // 添加数据值作为最后一列
-      newRow[headerRows] = value
-      
-      pivotedRows.push(newRow)
+      // 将该列的表头添加为一行
+      headers.push(headerCells)
+      // 将数据添加到数据数组
+      data.push(value)
     }
     
-    return { rows: pivotedRows }
+    return { headers, data }
   })
 }

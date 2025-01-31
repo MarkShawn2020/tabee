@@ -14,39 +14,48 @@ export function TableView() {
   const mobileTables = transformToMobileView(excelData)
   console.log({mobileTables});
   
-
   return (
     <div className="overflow-hidden w-full">
       <ScrollArea className="h-[500px] w-full">
         <div className="space-y-4 p-4 w-full">
           {mobileTables.map((table, tableIndex) => (
-            <Card key={tableIndex} className="overflow-hidden w-full">
-              <table className="w-full border-collapse bg-background">
-                <tbody>
-                  {table.rows.map((row, rowIndex) => (
-                    <tr key={rowIndex} className="border-b last:border-b-0">
-                      {row.map((cell, colIndex) => {
-                        if (cell.value === null) return null
-                        const isLastColumn = colIndex === row.length - 1
-                        return (
-                          <td
-                            key={colIndex}
-                            className={cn(
-                              "p-2 border-r last:border-r-0 align-middle whitespace-nowrap",
-                              !isLastColumn && "bg-muted/50 font-medium text-muted-foreground",
-                              isLastColumn && "border-l"
-                            )}
-                            rowSpan={cell.rowSpan}
-                            colSpan={cell.colSpan}
-                          >
-                            {cell.value}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <Card key={tableIndex} className="w-full">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse bg-background table-fixed">
+                  <tbody>
+                    {/* 遍历每一列的表头（现在是行） */}
+                    {table.headers.map((headerColumn, rowIndex) => (
+                      <tr key={rowIndex} className="border-b last:border-b-0">
+                        {/* 渲染表头单元格 */}
+                        {headerColumn.map((cell, colIndex) => {
+                          if (cell.value === null) return null
+                          return (
+                            <td
+                              key={colIndex}
+                              className={cn(
+                                "p-2 border-r align-middle break-words",
+                                "bg-muted/50 font-medium text-muted-foreground"
+                              )}
+                              rowSpan={cell.rowSpan}
+                              colSpan={cell.colSpan}
+                              style={{ width: '40%' }}
+                            >
+                              {cell.value}
+                            </td>
+                          )
+                        })}
+                        {/* 渲染该列对应的数据单元格 */}
+                        <td
+                          className="p-2 border-l align-middle break-words"
+                          style={{ width: '60%' }}
+                        >
+                          {table.data[rowIndex]?.value}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           ))}
         </div>
