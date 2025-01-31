@@ -9,6 +9,7 @@ export class ExcelError extends Error {
 
 export interface CellInfo {
   value: any
+  realValue?: any  // 合并单元格的实际值
   rowSpan?: number
   colSpan?: number
 }
@@ -89,7 +90,7 @@ export function parseExcelFile(file: File): Promise<ParsedExcel> {
  */
 function processMerges(worksheet: any, data: any[][]): CellInfo[][] {
   const result: CellInfo[][] = data.map(row => 
-    row.map(value => ({ value }))
+    row.map(value => ({ value, realValue: value }))
   )
   
   // 获取合并单元格信息
@@ -98,19 +99,24 @@ function processMerges(worksheet: any, data: any[][]): CellInfo[][] {
   // 处理每个合并区域
   for (const merge of merges) {
     const { s: start, e: end } = merge
+    const mainCellValue = data[start.r][start.c]
     
     // 设置主单元格的 span
     result[start.r][start.c] = {
-      value: data[start.r][start.c],
+      value: mainCellValue,
+      realValue: mainCellValue,
       rowSpan: end.r - start.r + 1,
       colSpan: end.c - start.c + 1
     }
     
-    // 将合并区域内的其他单元格设置为 null
+    // 将合并区域内的其他单元格设置为 null，但保留 realValue
     for (let r = start.r; r <= end.r; r++) {
       for (let c = start.c; c <= end.c; c++) {
         if (r !== start.r || c !== start.c) {
-          result[r][c] = { value: null }
+          result[r][c] = { 
+            value: null,
+            realValue: mainCellValue
+          }
         }
       }
     }
@@ -178,56 +184,9 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export const MAX_ROWS = 10000;
 export const MAX_COLS = 100;
 
-// 对列进行向下填充，但跳过表头行
-function forwardFillColumn(data: any[][], colIndex: number, startRow: number): void {
-  let lastValidValue = '';
-  for (let rowIndex = startRow; rowIndex < data.length; rowIndex++) {
-    const currentValue = data[rowIndex][colIndex];
-    if (currentValue === '') {
-      data[rowIndex][colIndex] = lastValidValue;
-    } else {
-      lastValidValue = currentValue;
-    }
-  }
-}
-
 export interface MobileViewTable {
   headers: CellInfo[][]  // 表头行
   data: CellInfo[]      // 数据行
-}
-
-/**
- * 展开数据行中的合并单元格，填充实际值
- */
-function expandMergedCells(dataRow: CellInfo[]): CellInfo[] {
-  const expandedRow: CellInfo[] = []
-  
-  for (let i = 0; i < dataRow.length; i++) {
-    const cell = dataRow[i]
-    if (cell.value === null) continue
-    
-    // 如果有合并单元格，填充相同的值
-    const rowSpan = cell.rowSpan || 1
-    const colSpan = cell.colSpan || 1
-    
-    // 填充实际值
-    expandedRow.push({
-      value: cell.value,
-      rowSpan: 1,
-      colSpan: 1
-    })
-    
-    // 如果有跨列，填充额外的列
-    for (let j = 1; j < colSpan; j++) {
-      expandedRow.push({
-        value: cell.value,
-        rowSpan: 1,
-        colSpan: 1
-      })
-    }
-  }
-  
-  return expandedRow
 }
 
 /**
@@ -242,45 +201,52 @@ export function transformToMobileView(data: ExcelData): MobileViewTable[] {
   // 提取表头行和数据行
   const headerRows_ = rows.slice(0, headerRows)
   const dataRows = rows.slice(headerRows)
-  
-  console.log('excel data: ', {data, headerRows_, dataRows});
-  
+    
   // 为每个数据行生成一个旋转的表格
-  return dataRows.map(dataRow => {
+  const newDataRaws = dataRows.map(dataRow => {
     const headers: CellInfo[][] = []
     const data: CellInfo[] = []
     
     // 展开数据行中的合并单元格
-    const expandedDataRow = expandMergedCells(dataRow)
+    const expandedDataRow = dataRow // todo: why this is ok
     
     // 遍历每一列
     for (let colIndex = 0; colIndex < expandedDataRow.length; colIndex++) {
-      const value = expandedDataRow[colIndex]
+      const cell = expandedDataRow[colIndex]
       // 跳过空列
-      if (value.value === null) continue
+      if (cell.value === null && !cell.realValue) continue
       
       // 获取该列的所有表头
       const headerCells = headerRows_.map(headerRow => {
         const cell = headerRow[colIndex]
-        if (cell.value === null) return cell
+        if (cell.value === null && !cell.realValue) return cell
         
         // 交换 rowSpan 和 colSpan
         return {
           value: cell.value,
+          realValue: cell.realValue || cell.value,
           rowSpan: cell.colSpan || 1,  // 原来的 colSpan 变成 rowSpan
           colSpan: cell.rowSpan || 1   // 原来的 rowSpan 变成 colSpan
         }
       })
       
       // 如果所有表头都是空的，跳过这一列
-      if (headerCells.every(cell => !cell.value)) continue
+      if (headerCells.every(cell => !cell.value && !cell.realValue)) continue
       
       // 将该列的表头添加为一行
       headers.push(headerCells)
-      // 将数据添加到数据数组
-      data.push(value)
+      // 将数据添加到数据数组，使用 realValue
+      data.push({
+        value: cell.realValue || cell.value,
+        rowSpan: 1,
+        colSpan: 1
+      })
     }
     
     return { headers, data }
   })
+
+  // console.log('excel data: ', {data, headerRows_, dataRows, newDataRaws});
+
+  return newDataRaws
 }
