@@ -2,15 +2,16 @@
 
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { excelDataAtom } from "@/lib/store"
+import { headerRowsAtom } from "@/lib/store/steps"
 import { useAtomValue } from "jotai"
 
 export function TablePreview() {
   const excelData = useAtomValue(excelDataAtom)
+  const headerRows = useAtomValue(headerRowsAtom)
 
   if (!excelData) return null
 
   const { headers, rows, metadata } = excelData
-  const headerRows = metadata.headerRows || 1
 
   // 高亮显示表头行
   const isHeaderRow = (rowIndex: number) => rowIndex < headerRows

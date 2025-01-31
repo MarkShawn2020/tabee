@@ -6,9 +6,8 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { stepAtom, tableInfoAtom } from "@/lib/store/steps"
+import { stepAtom, tableInfoAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom } from "@/lib/store/steps"
 import { useAtom } from "jotai"
-import { useState } from "react"
 import { ExcelData } from "@/lib/excel"
 
 interface Props {
@@ -26,10 +25,17 @@ interface Props {
 export function WorksheetSelector({ workbook }: Props) {
   const [, setStep] = useAtom(stepAtom)
   const [, setTableInfo] = useAtom(tableInfoAtom)
-  
-  const [selectedSheet, setSelectedSheet] = useState(workbook.sheets[0]?.name || '')
-  const [selectedTable, setSelectedTable] = useState(workbook.sheets[0]?.tables[0]?.range || '')
-  const [headerRows, setHeaderRows] = useState(1)
+  const [selectedSheet, setSelectedSheet] = useAtom(selectedSheetAtom)
+  const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom)
+  const [headerRows, setHeaderRows] = useAtom(headerRowsAtom)
+
+  // 初始化选中值
+  if (!selectedSheet && workbook.sheets.length > 0) {
+    setSelectedSheet(workbook.sheets[0].name)
+  }
+  if (!selectedTable && workbook.sheets[0]?.tables.length > 0) {
+    setSelectedTable(workbook.sheets[0].tables[0].range)
+  }
 
   const currentSheet = workbook.sheets.find(s => s.name === selectedSheet)
   const currentTable = currentSheet?.tables.find(t => t.range === selectedTable)
