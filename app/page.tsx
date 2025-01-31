@@ -4,11 +4,12 @@ import { TablePreview } from "@/components/table-preview"
 import { TableView } from "@/components/table-view"
 import { UploadZone } from '@/components/upload-zone'
 import { WorksheetSelector } from "@/components/worksheet-selector"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { excelDataAtom, errorAtom, loadingAtom, viewModeAtom } from '@/lib/store'
 import { Step as StepType, stepAtom } from "@/lib/store/steps"
 import { useAtom, useAtomValue } from 'jotai'
+import { Table, Smartphone } from "lucide-react"
 
 export default function Home() {
   const [excelData, setExcelData] = useAtom(excelDataAtom)
@@ -55,12 +56,24 @@ export default function Home() {
           <div className="space-y-4">
             <div className="flex items-center justify-end gap-4">
               <div className="flex items-center gap-2">
-                <Label htmlFor="view-mode">移动视图</Label>
-                <Switch
-                  id="view-mode"
-                  checked={viewMode === "series"}
-                  onCheckedChange={(checked) => setViewMode(checked ? "series" : "table")}
-                />
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="gap-2"
+                >
+                  <Table className="h-4 w-4" />
+                  <span>网页视图</span>
+                </Button>
+                <Button
+                  variant={viewMode === 'series' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('series')}
+                  className="gap-2"
+                >
+                  <Smartphone className="h-4 w-4" />
+                  <span>移动视图</span>
+                </Button>
               </div>
             </div>
             {viewMode === 'table' ? <TablePreview /> : <TableView />}
