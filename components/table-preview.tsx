@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { excelDataAtom } from "@/lib/store"
 import { useAtomValue } from "jotai"
+import { RowNumber } from "@/components/ui/row-number"
 
 export function TablePreview() {
   const excelData = useAtomValue(excelDataAtom)
@@ -18,6 +19,7 @@ export function TablePreview() {
           <thead className="sticky top-0 bg-background z-10">
             {Array(headerRows).fill(0).map((_, i) => (
               <tr key={i} className="border-b">
+                <RowNumber index={i} isHeader={true} variant="subtle" />
                 {rows[i].map((cell, j) => {
                   if (cell.value === null) return null
                   return (
@@ -37,6 +39,7 @@ export function TablePreview() {
           <tbody>
             {rows.slice(headerRows).map((row, i) => (
               <tr key={i} className="border-b hover:bg-muted/50">
+                <RowNumber index={i + headerRows} isHeader={false} variant="subtle" />
                 {row.map((cell, j) => {
                   if (cell.value === null) return null
                   return (
