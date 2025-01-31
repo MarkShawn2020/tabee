@@ -71,7 +71,7 @@ export default function Home() {
                   <span>网页视图</span>
                 </Button>
                 <Button
-                  variant={viewMode === "desktop" ? "default" : "outline"}
+                  variant={viewMode === "mobile" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setViewMode("mobile")}
                   className="gap-2"

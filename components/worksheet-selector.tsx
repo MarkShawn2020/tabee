@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
 import { stepAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom } from "@/lib/store/steps"
 import { rawExcelAtom, excelDataAtom } from "@/lib/store"
 import { useAtom, useAtomValue } from "jotai"
@@ -72,13 +73,17 @@ export function WorksheetSelector() {
 
           {currentData.length > 0 && (
             <div className="space-y-2">
-              <Label>表头行数</Label>
-              <Input
-                type="number"
-                value={headerRows}
-                onChange={e => setHeaderRows(Number(e.target.value))}
-                min={1}
-                max={Math.max(1, currentData.length - 1)}
+              <div className="flex items-center justify-between">
+                <Label>表头行数</Label>
+                <span className="text-sm text-muted-foreground">{headerRows}</span>
+              </div>
+              <Slider
+                value={[headerRows]}
+                onValueChange={([value]) => setHeaderRows(value)}
+                min={0}
+                max={3}
+                step={1}
+                className="w-full"
               />
             </div>
           )}
