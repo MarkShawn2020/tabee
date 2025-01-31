@@ -12,7 +12,7 @@ import {
   loadingAtom,
   viewModeAtom,
 } from "@/lib/store";
-import { Step as StepType, stepAtom } from "@/lib/store/steps";
+import { Step as StepType, stepAtom } from "@/lib/steps";
 import { useAtom, useAtomValue } from "jotai";
 import { Table, Smartphone } from "lucide-react";
 

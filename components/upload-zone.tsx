@@ -6,7 +6,7 @@ import { useAtom, useSetAtom } from 'jotai';
 import { ExcelError, parseExcelFile } from '@/lib/excel';
 import { errorAtom, loadingAtom, rawExcelAtom } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { stepAtom } from '@/lib/store/steps';
+import { stepAtom } from '@/lib/steps';
 
 export function UploadZone() {
   const setRawExcel = useSetAtom(rawExcelAtom);
