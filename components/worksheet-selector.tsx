@@ -85,6 +85,12 @@ export function WorksheetSelector() {
         </div>
       </Card>
 
+      <div className="flex justify-end">
+        <Button onClick={handleConfirm} disabled={!currentData.length}>
+          确认并继续
+        </Button>
+      </div>
+
       {currentData.length > 0 && (
         <Card className="w-full p-4 space-y-4">
           <Label>预览</Label>
@@ -119,11 +125,7 @@ export function WorksheetSelector() {
         </Card>
       )}
 
-      <div className="flex justify-end">
-        <Button onClick={handleConfirm} disabled={!currentData.length}>
-          确认并继续
-        </Button>
-      </div>
+
     </div>
   )
 }
