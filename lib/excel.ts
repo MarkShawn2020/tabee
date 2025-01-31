@@ -23,6 +23,19 @@ export class ExcelError extends Error {
   }
 }
 
+// 对列进行向下填充
+function forwardFillColumn(data: any[][], colIndex: number): void {
+  let lastValidValue = '';
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    const currentValue = data[rowIndex][colIndex];
+    if (currentValue === '') {
+      data[rowIndex][colIndex] = lastValidValue;
+    } else {
+      lastValidValue = currentValue;
+    }
+  }
+}
+
 export async function parseExcelFile(file: File): Promise<ExcelData> {
   console.log('🔍 Starting Excel file parsing:', {
     fileName: file.name,
@@ -72,6 +85,11 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
     });
     return newRow;
   });
+
+  // 对每一列进行向下填充
+  for (let colIndex = 0; colIndex < totalCols; colIndex++) {
+    forwardFillColumn(normalizedData, colIndex);
+  }
 
   // Create DataFrame with normalized data
   const df = new DataFrame(normalizedData);
