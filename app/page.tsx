@@ -88,17 +88,45 @@ export default function Home() {
   };
 
   return (
-    <main className="w-full container mx-auto p-4 space-y-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">TaBee</h1>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+    <main className="w-full container mx-auto space-y-12">
+      {/* Hero Section */}
+      <section className="text-center space-y-6 py-8">
+        <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          TaBee 智能表格阅读助手
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          让手机端 Excel 表格阅读变得简单高效，支持智能重排和多工作表切换
+        </p>
+        <div className="flex flex-wrap gap-4 justify-center items-center">
+          <div className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium">
+            ⚡️ 10MB 以内文件秒开
+          </div>
+          <div className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium">
+            🔒 本地处理，数据安全
+          </div>
+          <div className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium">
+            💡 智能重排优化
+          </div>
+        </div>
+      </section>
+
+      {/* Steps Section */}
+      <section className="max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-8">
           <Step
             step="upload"
             active={step === "upload"}
             available={canAccessStep("upload")}
             onClick={() => handleStepClick("upload")}
           >
-            上传表格
+            <span className="flex items-center gap-2">
+              <span className={`w-6 h-6 rounded-full border flex items-center justify-center ${
+                step === "upload"
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-muted-foreground/30 text-muted-foreground"
+              }`}>1</span>
+              上传表格
+            </span>
           </Step>
           <Divider />
           <Step
@@ -107,7 +135,14 @@ export default function Home() {
             available={canAccessStep("select")}
             onClick={() => handleStepClick("select")}
           >
-            选择工作表
+            <span className="flex items-center gap-2">
+              <span className={`w-6 h-6 rounded-full border flex items-center justify-center ${
+                step === "select"
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-muted-foreground/30 text-muted-foreground"
+              }`}>2</span>
+              选择工作表
+            </span>
           </Step>
           <Divider />
           <Step
@@ -116,27 +151,50 @@ export default function Home() {
             available={canAccessStep("view")}
             onClick={() => handleStepClick("view")}
           >
-            查看数据
+            <span className="flex items-center gap-2">
+              <span className={`w-6 h-6 rounded-full border flex items-center justify-center ${
+                step === "view"
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-muted-foreground/30 text-muted-foreground"
+              }`}>3</span>
+              查看内容
+            </span>
           </Step>
         </div>
-      </div>
 
-      {loading && (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto" />
-            <p className="text-sm text-gray-500">处理中...</p>
+        {/* Main Content Area */}
+        <div className="relative">
+          {loading && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          )}
+          {error && (
+            <div className="p-4 mb-4 text-sm text-red-500 bg-red-100 dark:bg-red-900/30 rounded-lg">
+              {error}
+            </div>
+          )}
+          {renderStep()}
+        </div>
+      </section>
+
+      {/* Features Section - Only show on upload step */}
+      {step === "upload" && (
+        <section className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+          <div className="p-6 rounded-xl bg-card border">
+            <h3 className="text-lg font-semibold mb-2">✨ 智能表格重排</h3>
+            <p className="text-sm text-muted-foreground">自动优化表格布局，让手机端阅读更轻松自如</p>
           </div>
-        </div>
+          <div className="p-6 rounded-xl bg-card border">
+            <h3 className="text-lg font-semibold mb-2">📱 移动优先设计</h3>
+            <p className="text-sm text-muted-foreground">完美适配各种移动设备，随时随地轻松查看</p>
+          </div>
+          <div className="p-6 rounded-xl bg-card border">
+            <h3 className="text-lg font-semibold mb-2">🔒 安全可靠</h3>
+            <p className="text-sm text-muted-foreground">所有数据本地处理，无需担心隐私泄露</p>
+          </div>
+        </section>
       )}
-
-      {error && (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center text-red-500">{error}</div>
-        </div>
-      )}
-
-      {!loading && !error && renderStep()}
     </main>
   );
 }
@@ -155,13 +213,15 @@ function Step({ children, active, available, onClick }: StepProps) {
     <button
       onClick={onClick}
       disabled={!available}
-      className={`px-4 py-2 rounded-full text-sm transition-colors ${
-        active
-          ? "bg-primary text-primary-foreground"
+      className={`
+        px-4 py-2 rounded-lg transition-colors
+        ${available ? "cursor-pointer" : "cursor-not-allowed opacity-50"}
+        ${active
+          ? "bg-primary/5 text-primary"
           : available
-            ? "bg-muted hover:bg-muted/80 cursor-pointer"
-            : "bg-muted/50 cursor-not-allowed"
-      }`}
+            ? "hover:bg-muted"
+            : ""}
+      `}
     >
       {children}
     </button>
@@ -170,5 +230,7 @@ function Step({ children, active, available, onClick }: StepProps) {
 
 // 步骤分隔符
 function Divider() {
-  return <div className="h-px w-8 bg-border" />;
+  return (
+    <div className="w-8 h-px bg-border sm:w-px sm:h-8 shrink-0" />
+  );
 }
