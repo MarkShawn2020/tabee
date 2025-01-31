@@ -44,7 +44,7 @@ export default function Home() {
       
       case 'select':
         return (
-          <div className="max-w-4xl mx-auto">
+          <div className="w-full max-w-4xl mx-auto px-4">
             <WorksheetSelector />
           </div>
         )
@@ -52,10 +52,10 @@ export default function Home() {
       case 'view':
         if (!excelData) return null
         return (
-          <div className="space-y-4">
+          <div className="space-y-4 px-4">
             <div className="flex items-center justify-end gap-4">
               <div className="flex items-center gap-2">
-                <Label htmlFor="view-mode">移动视图</Label>
+                <Label htmlFor="view-mode" className="hidden sm:inline-block">移动视图</Label>
                 <Switch
                   id="view-mode"
                   checked={viewMode === "series"}
@@ -70,55 +70,61 @@ export default function Home() {
   }
 
   return (
-    <main className="container mx-auto p-4 space-y-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">TaBee</h1>
-        <div className="flex items-center justify-center gap-2">
-          <Step 
-            step="upload" 
-            active={step === 'upload'} 
-            available={canAccessStep('upload')}
-            onClick={() => handleStepClick('upload')}
-          >
-            上传表格
-          </Step>
-          <Divider />
-          <Step 
-            step="select" 
-            active={step === 'select'} 
-            available={canAccessStep('select')}
-            onClick={() => handleStepClick('select')}
-          >
-            选择工作表
-          </Step>
-          <Divider />
-          <Step 
-            step="view" 
-            active={step === 'view'} 
-            available={canAccessStep('view')}
-            onClick={() => handleStepClick('view')}
-          >
-            查看数据
-          </Step>
+    <main className="min-h-screen bg-background">
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container mx-auto py-4">
+          <div className="text-center space-y-4">
+            <h1 className="text-xl sm:text-2xl font-bold">TaBee</h1>
+            <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2">
+              <Step 
+                step="upload" 
+                active={step === 'upload'} 
+                available={canAccessStep('upload')}
+                onClick={() => handleStepClick('upload')}
+              >
+                上传
+              </Step>
+              <Divider />
+              <Step 
+                step="select" 
+                active={step === 'select'} 
+                available={canAccessStep('select')}
+                onClick={() => handleStepClick('select')}
+              >
+                选择
+              </Step>
+              <Divider />
+              <Step 
+                step="view" 
+                active={step === 'view'} 
+                available={canAccessStep('view')}
+                onClick={() => handleStepClick('view')}
+              >
+                查看
+              </Step>
+            </div>
+          </div>
         </div>
       </div>
 
-      {loading && (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto" />
-            <p className="text-sm text-gray-500">处理中...</p>
+      <div className="container mx-auto py-4">
+        {loading && (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto" />
+              <p className="text-sm text-gray-500">处理中...</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {error && (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center text-red-500">{error}</div>
-        </div>
-      )}
+        {error && (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center text-red-500">{error}</div>
+          </div>
+        )}
 
-      {!loading && !error && renderStep()}
+        {!loading && !error && renderStep()}
+      </div>
     </main>
   )
 }
@@ -137,7 +143,7 @@ function Step({ children, active, available, onClick }: StepProps) {
     <button
       onClick={onClick}
       disabled={!available}
-      className={`px-4 py-2 rounded-full text-sm transition-colors ${
+      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
         active 
           ? 'bg-primary text-primary-foreground' 
           : available
@@ -152,5 +158,5 @@ function Step({ children, active, available, onClick }: StepProps) {
 
 // 步骤分隔符
 function Divider() {
-  return <div className="h-px w-8 bg-border" />
+  return <div className="h-px w-4 sm:w-8 bg-border" />
 }

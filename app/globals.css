@@ -66,4 +66,7 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* table td, table th { overflow-wrap: anywhere; } */
+
 }

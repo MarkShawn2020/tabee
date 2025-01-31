@@ -51,9 +51,9 @@ export function WorksheetSelector() {
   }
 
   return (
-    <div className="space-y-8">
-      <Card className="p-4 space-y-4">
-        <div className="space-y-4">
+    <div className="space-y-6">
+      <Card className="p-4 space-y-6">
+        <div className="grid gap-6">
           <div className="space-y-2">
             <Label>工作表</Label>
             <Select value={selectedSheet} onValueChange={setSelectedSheet}>
@@ -73,47 +73,57 @@ export function WorksheetSelector() {
           {currentData.length > 0 && (
             <div className="space-y-2">
               <Label>表头行数</Label>
-              <Input
-                type="number"
-                value={headerRows}
-                onChange={e => setHeaderRows(Number(e.target.value))}
-                min={1}
-                max={Math.max(1, currentData.length - 1)}
-              />
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={headerRows}
+                  onChange={e => setHeaderRows(Number(e.target.value))}
+                  min={1}
+                  max={Math.max(1, currentData.length - 1)}
+                  className="w-24"
+                />
+                <div className="text-sm text-muted-foreground pt-2">
+                  最大: {Math.max(1, currentData.length - 1)}
+                </div>
+              </div>
             </div>
           )}
         </div>
       </Card>
 
       {currentData.length > 0 && (
-        <Card className="p-4 space-y-4">
-          <Label>预览</Label>
-          <ScrollArea className="h-[300px] w-full rounded-md border">
+        <Card className="overflow-hidden">
+          <div className="p-4 border-b bg-muted/50">
+            <Label>预览</Label>
+          </div>
+          <ScrollArea className="h-[300px]">
             <div className="p-4">
-              <table className="w-full">
-                <tbody>
-                  {currentData.slice(0, 5).map((row, rowIndex) => (
-                    <tr 
-                      key={rowIndex}
-                      className={`border-b ${rowIndex < headerRows ? 'bg-muted/50' : ''}`}
-                    >
-                      {row.map((cell, cellIndex) => {
-                        if (cell.value === null) return null
-                        return (
-                          <td 
-                            key={cellIndex} 
-                            className="p-2 border-r"
-                            rowSpan={cell.rowSpan}
-                            colSpan={cell.colSpan}
-                          >
-                            {cell.value}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="border-collapse w-full overflow-scroll table-fixed">
+                  <tbody>
+                    {currentData.slice(0, 5).map((row, rowIndex) => (
+                      <tr 
+                        key={rowIndex}
+                        className={`border-b ${rowIndex < headerRows ? 'bg-muted/50' : ''}`}
+                      >
+                        {row.map((cell, cellIndex) => {
+                          if (cell.value === null) return null
+                          return (
+                            <td 
+                              key={cellIndex} 
+                              className="p-2 border-r whitespace-nowrap"
+                              rowSpan={cell.rowSpan}
+                              colSpan={cell.colSpan}
+                            >
+                              {cell.value}
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </ScrollArea>
         </Card>

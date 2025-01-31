@@ -6,22 +6,22 @@ import { excelDataAtom } from "@/lib/store"
 import { useAtomValue } from "jotai"
 import { transformToMobileView } from "@/lib/excel"
 import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 
 export function TableView() {
   const excelData = useAtomValue(excelDataAtom)
   if (!excelData) return null
 
   const mobileTables = transformToMobileView(excelData)
-  console.log({mobileTables});
   
   return (
-    <div className="overflow-hidden w-full">
-      <ScrollArea className="h-[500px] w-full">
-        <div className="space-y-4 p-4 w-full">
+    <div className="w-full">
+      <ScrollArea className="h-[calc(100vh-200px)]">
+        <div className="space-y-4 pb-4">
           {mobileTables.map((table, tableIndex) => (
-            <Card key={tableIndex} className="w-full">
+            <Card key={tableIndex} className="overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-background table-fixed">
+                <table className="w-full border-collapse">
                   <tbody>
                     {/* 遍历每一列的表头（现在是行） */}
                     {table.headers.map((headerColumn, rowIndex) => (
@@ -33,12 +33,12 @@ export function TableView() {
                             <td
                               key={colIndex}
                               className={cn(
-                                "p-2 border-r align-middle break-words",
-                                "bg-muted/50 font-medium text-muted-foreground"
+                                "p-3 border-r align-middle break-words",
+                                "bg-muted/50 font-medium text-muted-foreground text-sm"
                               )}
                               rowSpan={cell.rowSpan}
                               colSpan={cell.colSpan}
-                              style={{ width: '40%' }}
+                              style={{ width: '40%', minWidth: '120px' }}
                             >
                               {cell.value}
                             </td>
@@ -46,10 +46,18 @@ export function TableView() {
                         })}
                         {/* 渲染该列对应的数据单元格 */}
                         <td
-                          className="p-2 border-l align-middle break-words"
+                          className="p-3 border-l align-middle break-words"
                           style={{ width: '60%' }}
                         >
-                          {table.data[rowIndex]?.value}
+                          {table.data[rowIndex]?.value ? (
+                            <span className="text-sm">
+                              {table.data[rowIndex].value}
+                            </span>
+                          ) : (
+                            <Badge variant="secondary" className="font-normal">
+                              无数据
+                            </Badge>
+                          )}
                         </td>
                       </tr>
                     ))}
