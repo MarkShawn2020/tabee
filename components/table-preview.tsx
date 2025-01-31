@@ -7,6 +7,7 @@ import { useAtomValue } from "jotai"
 
 export function TablePreview() {
   const excelData = useAtomValue(excelDataAtom)
+
   if (!excelData) return null
 
   const { rows, metadata: { headerRows } } = excelData
@@ -19,14 +20,19 @@ export function TablePreview() {
           <thead className="sticky top-0 z-10">
             {Array(headerRows).fill(0).map((_, i) => (
               <tr key={i} className="bg-card border-b">
-                {rows[i].map((cell: any, j: number) => (
-                  <th 
-                    key={j}
-                    className="p-2 text-left font-medium text-muted-foreground border-r whitespace-nowrap"
-                  >
-                    {cell}
-                  </th>
-                ))}
+                {rows[i].map((cell, j) => {
+                  if (cell.value === null) return null
+                  return (
+                    <th 
+                      key={j}
+                      className="p-2 text-left font-medium text-muted-foreground border-r whitespace-nowrap"
+                      rowSpan={cell.rowSpan}
+                      colSpan={cell.colSpan}
+                    >
+                      {cell.value}
+                    </th>
+                  )
+                })}
               </tr>
             ))}
           </thead>
@@ -38,11 +44,19 @@ export function TablePreview() {
             <tbody>
               {rows.slice(headerRows).map((row, i) => (
                 <tr key={i} className="border-b hover:bg-muted/50">
-                  {row.map((cell: any, j: number) => (
-                    <td key={j} className="p-2 border-r">
-                      {cell}
-                    </td>
-                  ))}
+                  {row.map((cell, j) => {
+                    if (cell.value === null) return null
+                    return (
+                      <td 
+                        key={j} 
+                        className="p-2 border-r"
+                        rowSpan={cell.rowSpan}
+                        colSpan={cell.colSpan}
+                      >
+                        {cell.value}
+                      </td>
+                    )
+                  })}
                 </tr>
               ))}
             </tbody>

@@ -97,11 +97,19 @@ export function WorksheetSelector() {
                       key={rowIndex}
                       className={`border-b ${rowIndex < headerRows ? 'bg-muted/50' : ''}`}
                     >
-                      {row.map((cell, cellIndex) => (
-                        <td key={cellIndex} className="p-2 border-r">
-                          {cell}
-                        </td>
-                      ))}
+                      {row.map((cell, cellIndex) => {
+                        if (cell.value === null) return null
+                        return (
+                          <td 
+                            key={cellIndex} 
+                            className="p-2 border-r"
+                            rowSpan={cell.rowSpan}
+                            colSpan={cell.colSpan}
+                          >
+                            {cell.value}
+                          </td>
+                        )
+                      })}
                     </tr>
                   ))}
                 </tbody>

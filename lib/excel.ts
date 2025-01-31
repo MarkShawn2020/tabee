@@ -7,10 +7,16 @@ export class ExcelError extends Error {
   }
 }
 
+export interface CellInfo {
+  value: any
+  rowSpan?: number
+  colSpan?: number
+}
+
 export interface ExcelData {
   sheetName: string
   headers: string[]
-  rows: any[][]
+  rows: CellInfo[][]
   metadata: {
     headerRows: number
   }
@@ -18,7 +24,7 @@ export interface ExcelData {
 
 export interface WorksheetInfo {
   name: string
-  data: any[][]
+  data: CellInfo[][]
 }
 
 export interface ParsedExcel {
@@ -51,9 +57,12 @@ export function parseExcelFile(file: File): Promise<ParsedExcel> {
             blankrows: true,
           }) as any[][]
 
+          const cleanedData = cleanData(data)
+          const processedData = processMerges(worksheet, cleanedData)
+
           return {
             name,
-            data: cleanData(data)
+            data: processedData
           }
         })
 
@@ -76,10 +85,45 @@ export function parseExcelFile(file: File): Promise<ParsedExcel> {
 }
 
 /**
+ * 处理合并单元格信息
+ */
+function processMerges(worksheet: any, data: any[][]): CellInfo[][] {
+  const result: CellInfo[][] = data.map(row => 
+    row.map(value => ({ value }))
+  )
+  
+  // 获取合并单元格信息
+  const merges = worksheet['!merges'] || []
+  
+  // 处理每个合并区域
+  for (const merge of merges) {
+    const { s: start, e: end } = merge
+    
+    // 设置主单元格的 span
+    result[start.r][start.c] = {
+      value: data[start.r][start.c],
+      rowSpan: end.r - start.r + 1,
+      colSpan: end.c - start.c + 1
+    }
+    
+    // 将合并区域内的其他单元格设置为 null
+    for (let r = start.r; r <= end.r; r++) {
+      for (let c = start.c; c <= end.c; c++) {
+        if (r !== start.r || c !== start.c) {
+          result[r][c] = { value: null }
+        }
+      }
+    }
+  }
+  
+  return result
+}
+
+/**
  * 根据工作表数据和配置生成最终的表格数据
  */
 export function processSheetData(
-  sheetData: any[][],
+  sheetData: CellInfo[][],
   sheetName: string,
   headerRows: number
 ): ExcelData {
@@ -93,7 +137,7 @@ export function processSheetData(
   }
 
   // 提取表头
-  const headers = sheetData[headerRows - 1].map(cell => String(cell || ''))
+  const headers = sheetData[headerRows - 1].map(cell => String(cell.value || ''))
 
   return {
     sheetName,
@@ -147,35 +191,32 @@ function forwardFillColumn(data: any[][], colIndex: number, startRow: number): v
   }
 }
 
-export function transformToMobileView(data: ExcelData) {
-  const { rows, metadata } = data;
-  const headerRows = metadata.headerRows || 1;
+/**
+ * 转换为移动视图格式
+ */
+export function transformToMobileView(data: ExcelData): Record<string, CellInfo>[] {
+  const { rows, metadata: { headerRows } } = data
   
-  // 获取表头行和数据行
-  const headerRows_ = rows.slice(0, headerRows);
-  let dataRows = rows.slice(headerRows);
+  // 提取表头行
+  const headerRows_ = rows.slice(0, headerRows)
   
-  // 创建数据行的副本进行填充
-  const filledDataRows = dataRows.map(row => [...row]);
-  
-  // 只对数据行进行向下填充
-  for (let colIndex = 0; colIndex < filledDataRows[0].length; colIndex++) {
-    forwardFillColumn(filledDataRows, colIndex, 0);
-  }
-  
-  // 转换为移动视图格式
-  return filledDataRows.map(dataRow => {
-    return dataRow.map((value, colIndex) => {
+  // 转换数据行
+  return rows.slice(headerRows).map(dataRow => {
+    const result: Record<string, CellInfo> = {}
+    
+    dataRow.forEach((cell, colIndex) => {
+      // 如果是被合并的单元格，跳过
+      if (cell.value === null) return
+      
       // 构建多级表头
       const header = headerRows_
-        .map(headerRow => headerRow[colIndex])
+        .map(headerRow => headerRow[colIndex].value)
         .filter(h => h !== '') // 移除空字符串
-        .join(' - ');
+        .join(' - ')
       
-      return {
-        header,
-        value
-      };
-    });
-  });
+      result[header] = cell
+    })
+    
+    return result
+  })
 }
