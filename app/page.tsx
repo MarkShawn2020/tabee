@@ -92,7 +92,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="text-center space-y-6 py-8">
         <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          TaBee 智能表格阅读助手
+          Tabee 智能表格阅读助手
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           让手机端 Excel 表格阅读变得简单高效，支持智能重排和多工作表切换

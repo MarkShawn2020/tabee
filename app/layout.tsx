@@ -15,7 +15,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "TaBee - 智能表格阅读助手",
+  title: "Tabee - 智能表格阅读助手",
   description: "让手机端Excel表格阅读变得简单高效，支持智能重排和多工作表切换",
   keywords: "Excel, 表格阅读, 移动端优化, 智能重排",
 };
@@ -45,7 +45,7 @@ export default function RootLayout({
                 <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5">
                   <div className="flex gap-5 items-center">
                     <Link href={"/"} className="flex items-center gap-2">
-                      <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">TaBee</span>
+                      <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Tabee</span>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary hidden sm:inline-block">Beta</span>
                     </Link>
                   </div>
@@ -69,7 +69,7 @@ export default function RootLayout({
                 <div className="max-w-5xl mx-auto py-8 px-5">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                     <div className="space-y-3">
-                      <h3 className="font-semibold">关于 TaBee</h3>
+                      <h3 className="font-semibold">关于 Tabee</h3>
                       <p className="text-sm text-muted-foreground">专注于优化手机端Excel表格阅读体验的智能工具，让数据阅读更轻松。</p>
                     </div>
                     <div className="space-y-3">

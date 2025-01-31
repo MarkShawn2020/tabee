@@ -1,6 +1,6 @@
-# TaBee - 智能表格阅读助手
+# Tabee - 智能表格阅读助手
 
-TaBee 是一款专注于优化手机端 Excel 表格阅读体验的工具。通过智能化的表格重排和导航功能，让用户在手机上轻松阅读和理解表格内容。
+Tabee 是一款专注于优化手机端 Excel 表格阅读体验的工具。通过智能化的表格重排和导航功能，让用户在手机上轻松阅读和理解表格内容。
 
 ## 特性
 
@@ -30,8 +30,8 @@ TaBee 是一款专注于优化手机端 Excel 表格阅读体验的工具。通�
 1. 克隆项目并安装依赖
 
 ```bash
-git clone https://github.com/markshawn2020/tabee.git
-cd tabee
+git clone https://github.com/markshawn2020/Tabee.git
+cd Tabee
 pnpm install
 ```
 
