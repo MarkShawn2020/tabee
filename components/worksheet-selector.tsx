@@ -3,13 +3,13 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { stepAtom, selectedSheetAtom, selectedTableAtom, headerRowsAtom } from "@/lib/store/steps"
 import { rawExcelAtom, excelDataAtom } from "@/lib/store"
 import { useAtom, useAtomValue } from "jotai"
 import { processSheetData } from "@/lib/excel"
+import { Slider } from "@/components/ui/slider"
 
 export function WorksheetSelector() {
   const [, setStep] = useAtom(stepAtom)
@@ -72,13 +72,14 @@ export function WorksheetSelector() {
 
           {currentData.length > 0 && (
             <div className="space-y-2">
-              <Label>表头行数</Label>
-              <Input
-                type="number"
-                value={headerRows}
-                onChange={e => setHeaderRows(Number(e.target.value))}
-                min={1}
-                max={Math.max(1, currentData.length - 1)}
+              <Label>表头行数 ({headerRows})</Label>
+              <Slider
+                value={[headerRows]}
+                onValueChange={([value]) => setHeaderRows(value)}
+                min={0}
+                max={3}
+                step={1}
+                className="w-full"
               />
             </div>
           )}
@@ -124,8 +125,6 @@ export function WorksheetSelector() {
           </div>
         </Card>
       )}
-
-
     </div>
   )
 }
