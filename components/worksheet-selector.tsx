@@ -96,10 +96,10 @@ export function WorksheetSelector() {
           <div className="p-4 border-b bg-muted/50">
             <Label>预览</Label>
           </div>
-          <ScrollArea className="h-[300px]">
+          <div className="h-[300px] overflow-y-auto">
             <div className="p-4">
               <div className="overflow-x-auto">
-                <table className="border-collapse w-full overflow-scroll table-fixed">
+                <table className="w-full border-collapse">
                   <tbody>
                     {currentData.slice(0, 5).map((row, rowIndex) => (
                       <tr 
@@ -111,11 +111,17 @@ export function WorksheetSelector() {
                           return (
                             <td 
                               key={cellIndex} 
-                              className="p-2 border-r whitespace-nowrap"
+                              className="p-2 border-r whitespace-normal"
+                              style={{
+                                minWidth: '120px',
+                                maxWidth: '300px'
+                              }}
                               rowSpan={cell.rowSpan}
                               colSpan={cell.colSpan}
                             >
-                              {cell.value}
+                              <div className="break-words">
+                                {cell.value}
+                              </div>
                             </td>
                           )
                         })}
@@ -125,7 +131,7 @@ export function WorksheetSelector() {
                 </table>
               </div>
             </div>
-          </ScrollArea>
+          </div>
         </Card>
       )}
 
