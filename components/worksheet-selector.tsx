@@ -99,7 +99,7 @@ export function WorksheetSelector() {
           <ScrollArea className="h-[300px]">
             <div className="p-4">
               <div className="overflow-x-auto">
-                <table className="border-collapse w-full overflow-scroll">
+                <table className="border-collapse w-full overflow-scroll table-fixed">
                   <tbody>
                     {currentData.slice(0, 5).map((row, rowIndex) => (
                       <tr 
