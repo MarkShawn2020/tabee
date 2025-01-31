@@ -59,10 +59,10 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
   
   // Create DataFrame
   const df = new DataFrame(rawData);
-  const originalShape = df.shape;
+  const shape = df.shape as [number, number]; // 确保类型为元组
   
   console.log('📊 Original data info:', {
-    shape: originalShape,
+    shape,
     columns: df.columns,
     dtypes: df.dtypes,
     nullCount: df.isNa().sum().values
@@ -74,7 +74,7 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
 
   // Remove empty rows
   const cleanedDf = df.dropna({ how: 'all', axis: 0 });
-  const emptyRowsRemoved = originalShape[0] - cleanedDf.shape[0];
+  const emptyRowsRemoved = shape[0] - cleanedDf.shape[0];
 
   // Remove empty columns
   const cleanedDf2 = cleanedDf.dropna({ how: 'all', axis: 1 });
@@ -103,8 +103,8 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
   }
 
   // Extract headers and rows
-  const headers = cleanedDf2.columns;
-  const rows = cleanedDf2.values;
+  const headers = cleanedDf2.columns.map(String);
+  const rows = cleanedDf2.values as any[][];
 
   console.log('✅ Excel parsing completed:', {
     headers: headers.length,
@@ -116,8 +116,8 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
     rows,
     sheetName: firstSheetName,
     metadata: {
-      originalShape,
-      cleanedShape: cleanedDf2.shape,
+      originalShape: shape,
+      cleanedShape: cleanedDf2.shape as [number, number],
       emptyRowsRemoved,
       emptyColsRemoved
     }
@@ -133,7 +133,8 @@ export function transformToMobileView(data: ExcelData) {
   console.log('📊 Data shape for mobile transformation:', df.shape);
   
   // Transform to mobile-friendly format
-  const mobileRows = df.values.map((row, rowIndex) => {
+  const values = df.values as unknown as any[][];
+  const mobileRows = values.map((row, rowIndex) => {
     const transformedRow = df.columns.map((header, colIndex) => ({
       header,
       value: row[colIndex],

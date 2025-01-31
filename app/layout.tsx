@@ -6,6 +6,7 @@ import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import Link from "next/link";
+import { Suspense } from "react";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -47,7 +48,13 @@ export default function RootLayout({
                       <DeployButton />
                     </div>
                   </div>
-                  {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+                  {!hasEnvVars ? (
+                    <EnvVarWarning />
+                  ) : (
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <HeaderAuth />
+                    </Suspense>
+                  )}
                 </div>
               </nav>
               <div className="flex flex-col gap-20 max-w-5xl p-5">
