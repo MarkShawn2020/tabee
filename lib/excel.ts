@@ -53,46 +53,37 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
   const firstSheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[firstSheetName];
 
-  // Convert to array of arrays
-  const rawData = utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-  
-  // Create DataFrame
-  const df = new DataFrame(rawData);
+  // Convert to array of arrays, preserving empty cells
+  const rawData = utils.sheet_to_json(worksheet, {
+    header: 1,
+    defval: '', // 设置空单元格的默认值为空字符串
+    blankrows: true, // 保留空行
+  }) as any[][];
+
+  // 获取表格的实际范围
+  const range = utils.decode_range(worksheet['!ref'] || 'A1');
+  const totalCols = range.e.c - range.s.c + 1;
+
+  // 确保每行都有相同数量的列
+  const normalizedData = rawData.map(row => {
+    const newRow = new Array(totalCols).fill('');
+    row.forEach((cell, index) => {
+      newRow[index] = cell;
+    });
+    return newRow;
+  });
+
+  // Create DataFrame with normalized data
+  const df = new DataFrame(normalizedData);
   const shape = df.shape as [number, number];
-  
-  console.log('📊 Original data info:', {
-    shape,
-    columns: df.columns,
-    dtypes: df.dtypes,
-    nullCount: df.isNa().sum().values
-  });
 
-  // Log sample of original data
-  console.log('📊 Original data head (first 10 rows):');
-  df.head(10).print();
-
-  // Remove empty rows
-  // df.dropNa({ axis: 0, inplace: true,  });
-  // Remove empty columns
-  // df.dropNa({ axis: 1, inplace: true });
-
-  console.log('🧹 Cleaning results:', {
-    finalShape: df.shape
-  });
+  console.log('📊 Data shape:', shape);
 
   // Validate dimensions
   if (df.shape[0] > MAX_ROWS) {
-    console.warn('❌ Too many rows:', {
-      actualRows: df.shape[0],
-      maxRows: MAX_ROWS
-    });
     throw new ExcelError(`Sheet exceeds ${MAX_ROWS} rows limit`);
   }
   if (df.shape[1] > MAX_COLS) {
-    console.warn('❌ Too many columns:', {
-      actualColumns: df.shape[1],
-      maxColumns: MAX_COLS
-    });
     throw new ExcelError(`Sheet exceeds ${MAX_COLS} columns limit`);
   }
 
@@ -102,7 +93,7 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
 
   console.log('✅ Excel parsing completed:', {
     headers: headers.length,
-    rows: rows.length
+    rows: rows.length,
   });
 
   return {
@@ -127,7 +118,7 @@ export function transformToMobileView(data: ExcelData) {
   return dataRows.map(row => {
     return headers.map((header, index) => ({
       header,
-      value: row[index]
+      value: row[index] || '' // 确保空值显示为空字符串
     }));
   });
 }

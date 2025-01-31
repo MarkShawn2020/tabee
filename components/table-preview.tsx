@@ -58,7 +58,7 @@ export function TablePreview() {
                   {headers.map((header, index) => (
                     <th
                       key={index}
-                      className="p-2 text-left font-medium text-sm border-r last:border-r-0 whitespace-nowrap"
+                      className="p-2 text-left font-medium text-sm border-r last:border-r-0 "
                     >
                       {header}
                     </th>
@@ -76,7 +76,7 @@ export function TablePreview() {
                     {row.map((cell, cellIndex) => (
                       <td
                         key={cellIndex}
-                        className="p-2 border-r last:border-r-0 whitespace-nowrap"
+                        className="p-2 border-r last:border-r-0"
                       >
                         {cell}
                       </td>
