@@ -73,11 +73,11 @@ export async function parseExcelFile(file: File): Promise<ExcelData> {
   df.head(10).print();
 
   // Remove empty rows
-  const cleanedDf = df.dropNa({ axis: 0, how: 'all' });
+  const cleanedDf = df.dropNa({ axis: 0, inplace: false });
   const emptyRowsRemoved = shape[0] - cleanedDf.shape[0];
 
   // Remove empty columns
-  const cleanedDf2 = cleanedDf.dropNa({ axis: 1, how: 'all' });
+  const cleanedDf2 = cleanedDf.dropNa({ axis: 1, inplace: false });
   const emptyColsRemoved = cleanedDf.shape[1] - cleanedDf2.shape[1];
 
   console.log('🧹 Cleaning results:', {

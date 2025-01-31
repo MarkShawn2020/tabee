@@ -2,13 +2,14 @@ import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useSetAtom } from 'jotai';
 import { ExcelError, parseExcelFile } from '@/lib/excel';
-import { excelDataAtom, errorAtom, loadingAtom } from '@/lib/store';
+import { excelDataAtom, errorAtom, loadingAtom, structureAnalysisAtom } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 export function UploadZone() {
   const setExcelData = useSetAtom(excelDataAtom);
   const setLoading = useSetAtom(loadingAtom);
   const setError = useSetAtom(errorAtom);
+  const setStructureAnalysis = useSetAtom(structureAnalysisAtom);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -26,6 +27,9 @@ export function UploadZone() {
     try {
       setLoading(true);
       setError(null);
+      setStructureAnalysis(null);
+      
+      // 解析 Excel 文件
       const data = await parseExcelFile(file);
       console.log('✅ File processing completed:', {
         sheetName: data.sheetName,
@@ -33,6 +37,23 @@ export function UploadZone() {
         rows: data.rows.length
       });
       setExcelData(data);
+
+      // 分析表格结构
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/table-analysis', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze table structure');
+      }
+
+      const analysis = await response.json();
+      setStructureAnalysis(analysis);
+      
     } catch (err) {
       console.error('❌ Error processing file:', err);
       if (err instanceof ExcelError) {
@@ -44,7 +65,7 @@ export function UploadZone() {
     } finally {
       setLoading(false);
     }
-  }, [setExcelData, setError, setLoading]);
+  }, [setExcelData, setError, setLoading, setStructureAnalysis]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

@@ -1,13 +1,16 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { excelDataAtom, viewModeAtom } from '@/lib/store';
+import { excelDataAtom, viewModeAtom, structureAnalysisAtom } from '@/lib/store';
 import { transformToMobileView } from '@/lib/excel';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card } from '@/components/ui/card';
+import { Check, X } from 'lucide-react';
 
 export function TableView() {
   const excelData = useAtomValue(excelDataAtom);
   const viewMode = useAtomValue(viewModeAtom);
   const setViewMode = useSetAtom(viewModeAtom);
+  const structureAnalysis = useAtomValue(structureAnalysisAtom);
 
   if (!excelData) return null;
 
@@ -26,27 +29,41 @@ export function TableView() {
     setViewMode(mode);
   };
 
+  console.log({structureAnalysis});
+  
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{sheetName}</h2>
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === 'table' ? 'default' : 'outline'}
-            onClick={() => handleViewModeChange('table')}
-            size="sm"
-          >
-            Table
-          </Button>
-          <Button
-            variant={viewMode === 'series' ? 'default' : 'outline'}
-            onClick={() => handleViewModeChange('series')}
-            size="sm"
-          >
-            Series
-          </Button>
-        </div>
-      </div>
+      {/* 结构化分析结果 */}
+      {structureAnalysis && (
+        <Card className="p-4 w-full">
+          <div className="flex items-start gap-3 overflow-x-hidden">
+
+            <div className='w-full overflow-x-hidden'>
+              <h3 className="font-medium inline-flex items-center gap-2">
+              {structureAnalysis.isStructured ? (
+              <Check className="w-5 h-5 text-green-500 mt-0.5" />
+            ) : (
+              <X className="w-5 h-5 text-red-500 mt-0.5" />
+            )}
+
+                {structureAnalysis.isStructured ? '表格可以结构化展示' : '表格不适合结构化展示'}
+              </h3>
+
+              <p className="text-sm text-gray-500 mt-1">{structureAnalysis.reason}</p>
+
+              {structureAnalysis.isStructured && structureAnalysis.firstRecord && (
+                <div className="mt-2 text-sm w-full">
+                  <div className="font-medium text-gray-600">数据示例：</div>
+                  <pre className="mt-1 p-2 rounded-md overflow-x-auto w-full">
+                    {JSON.stringify(structureAnalysis.firstRecord, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
 
       <ScrollArea className="h-[calc(100vh-200px)] rounded-md border">
         {viewMode === 'table' ? (
